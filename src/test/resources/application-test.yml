@@ -15,10 +15,11 @@ mybatis:
 # 日志配置
 logging:
   level:
-    com.keshe: INFO
     com.keshe.mapper: DEBUG
-    org.springframework.jdbc.core: DEBUG
+    org.springframework.jdbc: DEBUG
     root: INFO
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
 
 server:
   port: 8080
