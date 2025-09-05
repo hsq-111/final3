@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.keshe.mapper.UserPreferenceMapper">
+    <!-- 根据用户ID查询偏好 -->
+    <select id="selectByUserId" resultType="map">
+        SELECT
+            preference_id AS id,
+            user_id,
+            facility_type AS facilityType,
+            frequency,
+            created_at AS createdAt,
+            updated_at AS updatedAt
+        FROM user_preference
+        WHERE user_id = #{userId}
+        ORDER BY updated_at DESC
+    </select>
+
+    <!-- 根据用户ID和设施类型查询偏好 -->
+    <select id="selectByUserIdAndType" resultType="map">
+        SELECT
+            preference_id AS id,
+            user_id,
+            facility_type AS facilityType,
+            frequency,
+            created_at AS createdAt,
+            updated_at AS updatedAt
+        FROM user_preference
+        WHERE user_id = #{userId} AND facility_type = #{facilityType}
+    </select>
+
+    <!-- 插入新偏好 -->
+    <insert id="insert" useGeneratedKeys="true" keyProperty="preference_id">
+        INSERT INTO user_preference (user_id, facility_type, frequency, created_at, updated_at)
+        VALUES (#{user_id}, #{facility_type}, #{frequency}, #{created_at}, #{updated_at})
+    </insert>
+
+    <!-- 更新偏好信息 -->
+    <update id="update">
+        UPDATE user_preference
+        <set>
+            <if test="frequency != null">frequency = #{frequency},</if>
+            updated_at = #{updated_at}
+        </set>
+        WHERE preference_id = #{preference_id}
+    </update>
+
+    <!-- 查询推荐课程 -->
+    <select id="selectRecommendedClasses" resultType="map">
+        SELECT
+            c.class_id AS id,
+            c.name,
+            c.type,
+            c.instructor,
+            c.time,
+            c.location,
+            c.capacity
+        FROM fitness_class c
+        WHERE c.type IN (
+            SELECT facility_type
+            FROM user_preference
+            WHERE user_id = #{userId}
+        )
+        AND c.status = 'ACTIVE'
+        AND c.time > NOW()
+        ORDER BY c.time ASC
+        LIMIT 5
+    </select>
+</mapper>

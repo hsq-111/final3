@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.keshe.mapper.RecommendationMapper">
+    <!-- 基于用户偏好查询推荐课程 -->
+    <select id="selectByUserPreferences" resultType="map">
+        SELECT
+            c.class_id AS id,
+            c.name,
+            c.type,
+            c.instructor,
+            c.time,
+            c.location,
+            c.capacity,
+            COUNT(r.reservation_id) AS participantCount
+        FROM fitness_class c
+        LEFT JOIN reservation r ON c.class_id = r.facility_id AND r.status = 'CONFIRMED'
+        WHERE c.class_id NOT IN (
+            SELECT facility_id FROM reservation WHERE user_id = #{userId}
+        )
+        AND c.type IN (
+            SELECT facility_type FROM user_preference WHERE user_id = #{userId}
+        )
+        <if test="category != null and category != ''">
+            AND c.type = #{category}
+        </if>
+        AND c.status = 'ACTIVE'
+        AND c.time > NOW()
+        GROUP BY c.class_id
+        ORDER BY c.time ASC
+        LIMIT #{start}, #{pageSize}
+    </select>
+
+    <!-- 查询热门课程 -->
+    <select id="selectPopularClasses" resultType="map">
+        SELECT
+            c.class_id AS id,
+            c.name,
+            c.type,
+            c.instructor,
+            c.time,
+            c.location,
+            c.capacity,
+            COUNT(r.reservation_id) AS participantCount
+        FROM fitness_class c
+        LEFT JOIN reservation r ON c.class_id = r.facility_id AND r.status = 'CONFIRMED'
+        <if test="category != null and category != ''">
+            WHERE c.type = #{category}
+        </if>
+        AND c.status = 'ACTIVE'
+        AND c.time > NOW()
+        GROUP BY c.class_id
+        ORDER BY participantCount DESC, c.time ASC
+        LIMIT #{start}, #{pageSize}
+    </select>
+
+    <!-- 根据ID查询课程 -->
+    <select id="selectClassById" resultType="map">
+        SELECT * FROM fitness_class WHERE class_id = #{classId}
+    </select>
+
+    <!-- 根据用户ID和课程ID查询反馈 -->
+    <select id="selectFeedbackByUserAndClass" resultType="map">
+        SELECT
+            feedback_id as feedback_id,
+            user_id as user_id,
+            class_id as class_id,
+            feedback as feedback,
+            created_at as created_at,
+            updated_at as updated_at
+        FROM recommendation_feedback
+        WHERE user_id = #{userId} AND class_id = #{classId}
+    </select>
+
+    <!-- 插入反馈记录 -->
+    <insert id="insertFeedback" useGeneratedKeys="true" keyProperty="feedback_id">
+        INSERT INTO recommendation_feedback (user_id, class_id, feedback, created_at, updated_at)
+        VALUES (#{user_id}, #{class_id}, #{feedback}, #{created_at}, #{updated_at})
+    </insert>
+
+    <!-- 更新反馈记录 -->
+    <update id="updateFeedback">
+        UPDATE recommendation_feedback
+        <set>
+            <if test="feedback != null">feedback = #{feedback},</if>
+            updated_at = #{updated_at}
+        </set>
+        WHERE feedback_id = #{feedback_id}
+    </update>
+
+    <!-- 查询推荐统计 -->
+    <select id="selectRecommendationStats" resultType="map">
+        SELECT
+            (
+                SELECT COUNT(*) FROM recommendation_feedback WHERE user_id = #{userId} AND feedback = 'LIKE'
+            ) AS likes,
+            (
+                SELECT COUNT(*) FROM recommendation_feedback WHERE user_id = #{userId} AND feedback = 'DISLIKE'
+            ) AS dislikes,
+            (
+                SELECT COUNT(*) FROM recommendation_feedback WHERE user_id = #{userId} AND feedback = 'NEUTRAL'
+            ) AS neutrals,
+            (
+                SELECT COUNT(*) FROM reservation WHERE user_id = #{userId} AND status = 'CONFIRMED'
+            ) AS confirmedReservations
+    </select>
+
+    <!-- 查询用户兴趣分布 -->
+    <select id="selectInterestDistribution" resultType="map">
+        SELECT
+            type AS category,
+            COUNT(*) AS count
+        FROM (
+            SELECT c.type
+            FROM reservation r
+            JOIN fitness_class c ON r.facility_id = c.class_id
+            WHERE r.user_id = #{userId} AND r.status = 'CONFIRMED'
+            GROUP BY c.type
+            UNION ALL
+            SELECT facility_type AS type
+            FROM user_preference
+            WHERE user_id = #{userId}
+        ) AS interests
+        GROUP BY category
+        ORDER BY count DESC
+    </select>
+
+    <!-- 查询最近的反馈 -->
+    <select id="selectRecentFeedback" resultType="map">
+        SELECT
+            rf.feedback_id AS id,
+            rf.class_id,
+            c.name AS className,
+            rf.feedback,
+            rf.updated_at AS updatedAt
+        FROM recommendation_feedback rf
+        JOIN fitness_class c ON rf.class_id = c.class_id
+        WHERE rf.user_id = #{userId}
+        ORDER BY rf.updated_at DESC
+        LIMIT #{limit}
+    </select>
+</mapper>

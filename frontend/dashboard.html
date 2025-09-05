@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>首页 - 健身管理系统</title>
+  <link rel="stylesheet" href="css/style.css">
+  <!-- 引入Font Awesome图标库 -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    /* 仪表盘布局样式 */
+    .dashboard-container {
+      display: flex;
+      min-height: 100vh;
+    }
+    
+    /* 侧边栏导航 */
+    .sidebar {
+      width: 240px;
+      background-color: #1e293b;
+      color: white;
+      position: fixed;
+      height: 100vh;
+      overflow-y: auto;
+      transition: width 0.3s ease;
+      z-index: 100;
+    }
+    
+    .sidebar-header {
+      padding: 20px;
+      border-bottom: 1px solid #334155;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    
+    .sidebar-header i {
+      font-size: 1.5rem;
+      color: #3b82f6;
+    }
+    
+    .sidebar-header h2 {
+      margin: 0;
+      font-size: 1.25rem;
+      font-weight: 600;
+    }
+    
+    .nav-menu {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    
+    .nav-item {
+      position: relative;
+    }
+    
+    .nav-link {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 16px 20px;
+      color: #cbd5e1;
+      text-decoration: none;
+      transition: all 0.2s ease;
+    }
+    
+    .nav-link:hover {
+      background-color: #334155;
+      color: white;
+    }
+    
+    .nav-link.active {
+      background-color: #3b82f6;
+      color: white;
+    }
+    
+    .nav-link i {
+      font-size: 1.125rem;
+      width: 24px;
+      text-align: center;
+    }
+    
+    /* 主内容区域 */
+    .main-content {
+      flex: 1;
+      margin-left: 240px;
+      transition: margin-left 0.3s ease;
+    }
+    
+    /* 顶部导航 */
+    .top-nav {
+      background-color: white;
+      padding: 16px 24px;
+      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+    
+    .top-nav-left {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    
+    .toggle-sidebar {
+      font-size: 1.25rem;
+      cursor: pointer;
+      color: #334155;
+    }
+    
+    .top-nav-right {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    
+    .notification {
+      position: relative;
+      cursor: pointer;
+      color: #334155;
+      font-size: 1.25rem;
+    }
+    
+    .notification-badge {
+      position: absolute;
+      top: -4px;
+      right: -4px;
+      background-color: #ef4444;
+      color: white;
+      border-radius: 50%;
+      width: 16px;
+      height: 16px;
+      font-size: 0.75rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .user-profile {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+    }
+    
+    .user-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background-color: #3b82f6;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: 600;
+    }
+    
+    .user-info {
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .user-name {
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: #1e293b;
+    }
+    
+    .user-role {
+      font-size: 0.75rem;
+      color: #64748b;
+    }
+    
+    /* 内容包装器 */
+    .content-wrapper {
+      padding: 24px;
+    }
+    
+    .page-header {
+      margin-bottom: 24px;
+    }
+    
+    .page-header h1 {
+      margin: 0;
+      font-size: 1.875rem;
+      color: #1e293b;
+    }
+    
+    .page-header p {
+      color: #64748b;
+      margin-top: 4px;
+    }
+    
+    /* 数据卡片网格 */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 24px;
+      margin-bottom: 24px;
+    }
+    
+    .stat-card {
+      background-color: white;
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    
+    .stat-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    }
+    
+    .stat-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 16px;
+    }
+    
+    .stat-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      color: white;
+    }
+    
+    .stat-icon.users {
+      background-color: #3b82f6;
+    }
+    
+    .stat-icon.equipment {
+      background-color: #10b981;
+    }
+    
+    .stat-icon.appointments {
+      background-color: #f59e0b;
+    }
+    
+    .stat-icon.revenue {
+      background-color: #8b5cf6;
+    }
+    
+    .stat-card-content h3 {
+      margin: 0;
+      font-size: 2rem;
+      font-weight: 700;
+      color: #1e293b;
+    }
+    
+    .stat-card-content p {
+      margin: 0;
+      color: #64748b;
+      font-size: 0.875rem;
+    }
+    
+    /* 数据图表区域 */
+    .charts-section {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 24px;
+      margin-bottom: 24px;
+    }
+    
+    .chart-card {
+      background-color: white;
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+    }
+    
+    .chart-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+    }
+    
+    .chart-title {
+      font-size: 1.125rem;
+      font-weight: 600;
+      color: #1e293b;
+      margin: 0;
+    }
+    
+    .chart-dropdown {
+      padding: 8px 12px;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      font-size: 0.875rem;
+      background-color: white;
+    }
+    
+    /* 最近活动区域 */
+    .recent-activities {
+      background-color: white;
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+    }
+    
+    .activities-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+    }
+    
+    .activities-title {
+      font-size: 1.125rem;
+      font-weight: 600;
+      color: #1e293b;
+      margin: 0;
+    }
+    
+    .view-all {
+      color: #3b82f6;
+      text-decoration: none;
+      font-size: 0.875rem;
+    }
+    
+    .activities-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    
+    .activity-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+      padding: 16px 0;
+      border-bottom: 1px solid #f1f5f9;
+    }
+    
+    .activity-item:last-child {
+      border-bottom: none;
+    }
+    
+    .activity-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      color: white;
+      flex-shrink: 0;
+    }
+    
+    .activity-content {
+      flex: 1;
+    }
+    
+    .activity-message {
+      font-size: 0.875rem;
+      color: #1e293b;
+      margin-bottom: 4px;
+    }
+    
+    .activity-time {
+      font-size: 0.75rem;
+      color: #64748b;
+    }
+    
+    /* 响应式设计 */
+    @media (max-width: 1024px) {
+      .charts-section {
+        grid-template-columns: 1fr;
+      }
+    }
+    
+    @media (max-width: 768px) {
+      .sidebar {
+        width: 200px;
+      }
+      
+      .main-content {
+        margin-left: 200px;
+      }
+      
+      .stats-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+    
+    @media (max-width: 640px) {
+      .sidebar {
+        transform: translateX(-100%);
+      }
+      
+      .sidebar.open {
+        transform: translateX(0);
+      }
+      
+      .main-content {
+        margin-left: 0;
+      }
+      
+      .toggle-sidebar {
+        display: block;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="dashboard-container">
+    <!-- 侧边栏导航 -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <i class="fas fa-dumbbell"></i>
+        <h2>健身管理系统</h2>
+      </div>
+      
+      <ul class="nav-menu">
+        <li class="nav-item">
+          <a href="dashboard.html" class="nav-link active">
+            <i class="fas fa-home"></i>
+            <span>首页</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="members.html" class="nav-link">
+            <i class="fas fa-users"></i>
+            <span>会员管理</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="equipment.html" class="nav-link">
+            <i class="fas fa-tools"></i>
+            <span>器材管理</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="trainers.html" class="nav-link">
+            <i class="fas fa-user-tie"></i>
+            <span>教练管理</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="classes.html" class="nav-link">
+            <i class="fas fa-calendar-alt"></i>
+            <span>课程管理</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="appointments.html" class="nav-link">
+            <i class="fas fa-clipboard-list"></i>
+            <span>预约管理</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="reports.html" class="nav-link">
+            <i class="fas fa-chart-bar"></i>
+            <span>数据报表</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="settings.html" class="nav-link">
+            <i class="fas fa-cog"></i>
+            <span>系统设置</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="javascript:void(0)" id="logout-button" class="nav-link">
+            <i class="fas fa-sign-out-alt"></i>
+            <span>退出登录</span>
+          </a>
+        </li>
+      </ul>
+    </aside>
+    
+    <!-- 主内容区域 -->
+    <main class="main-content">
+      <!-- 顶部导航 -->
+      <nav class="top-nav">
+        <div class="top-nav-left">
+          <i class="fas fa-bars toggle-sidebar" id="toggle-sidebar"></i>
+        </div>
+        <div class="top-nav-right">
+          <div class="notification">
+            <i class="fas fa-bell"></i>
+            <span class="notification-badge">3</span>
+          </div>
+          <div class="user-profile">
+            <div class="user-avatar" id="user-avatar">AD</div>
+            <div class="user-info">
+              <span class="user-name" id="user-name">管理员</span>
+              <span class="user-role">超级管理员</span>
+            </div>
+          </div>
+        </div>
+      </nav>
+      
+      <!-- 内容包装器 -->
+      <div class="content-wrapper">
+        <!-- 页面标题 -->
+        <div class="page-header">
+          <h1>欢迎回来，<span id="welcome-user">管理员</span></h1>
+          <p>今天是 <span id="current-date">2023年10月15日 星期日</span></p>
+        </div>
+        
+        <!-- 数据统计卡片 -->
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-card-header">
+              <div class="stat-icon users">
+                <i class="fas fa-users"></i>
+              </div>
+            </div>
+            <div class="stat-card-content">
+              <h3>156</h3>
+              <p>总会员数</p>
+            </div>
+          </div>
+          
+          <div class="stat-card">
+            <div class="stat-card-header">
+              <div class="stat-icon equipment">
+                <i class="fas fa-tools"></i>
+              </div>
+            </div>
+            <div class="stat-card-content">
+              <h3>48</h3>
+              <p>器材总数</p>
+            </div>
+          </div>
+          
+          <div class="stat-card">
+            <div class="stat-card-header">
+              <div class="stat-icon appointments">
+                <i class="fas fa-clipboard-list"></i>
+              </div>
+            </div>
+            <div class="stat-card-content">
+              <h3>32</h3>
+              <p>今日预约</p>
+            </div>
+          </div>
+          
+          <div class="stat-card">
+            <div class="stat-card-header">
+              <div class="stat-icon revenue">
+                <i class="fas fa-yuan-sign"></i>
+              </div>
+            </div>
+            <div class="stat-card-content">
+              <h3>¥12,560</h3>
+              <p>本月收入</p>
+            </div>
+          </div>
+        </div>
+        
+        <!-- 数据图表区域 -->
+        <div class="charts-section">
+          <div class="chart-card">
+            <div class="chart-header">
+              <h3 class="chart-title">会员增长趋势</h3>
+              <select class="chart-dropdown">
+                <option value="month">最近30天</option>
+                <option value="quarter">最近3个月</option>
+                <option value="year">最近1年</option>
+              </select>
+            </div>
+            <div class="chart-container" style="height: 300px;">
+              <!-- 这里将放置图表，使用占位符 -->
+              <div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: #94a3b8;">
+                <i class="fas fa-chart-line text-5xl"></i>
+              </div>
+            </div>
+          </div>
+          
+          <div class="chart-card">
+            <div class="chart-header">
+              <h3 class="chart-title">会员类型分布</h3>
+            </div>
+            <div class="chart-container" style="height: 300px;">
+              <!-- 这里将放置图表，使用占位符 -->
+              <div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: #94a3b8;">
+                <i class="fas fa-chart-pie text-5xl"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- 最近活动区域 -->
+        <div class="recent-activities">
+          <div class="activities-header">
+            <h3 class="activities-title">最近活动</h3>
+            <a href="#" class="view-all">查看全部</a>
+          </div>
+          
+          <ul class="activities-list">
+            <li class="activity-item">
+              <div class="activity-icon" style="background-color: #3b82f6;">
+                <i class="fas fa-user-plus"></i>
+              </div>
+              <div class="activity-content">
+                <p class="activity-message">新会员 <strong>张三</strong> 注册成功</p>
+                <p class="activity-time">10分钟前</p>
+              </div>
+            </li>
+            
+            <li class="activity-item">
+              <div class="activity-icon" style="background-color: #10b981;">
+                <i class="fas fa-clipboard-check"></i>
+              </div>
+              <div class="activity-content">
+                <p class="activity-message">会员 <strong>李四</strong> 完成了私教课程预约</p>
+                <p class="activity-time">30分钟前</p>
+              </div>
+            </li>
+            
+            <li class="activity-item">
+              <div class="activity-icon" style="background-color: #f59e0b;">
+                <i class="fas fa-tools"></i>
+              </div>
+              <div class="activity-content">
+                <p class="activity-message">器材 <strong>跑步机A3</strong> 状态更新为需要维护</p>
+                <p class="activity-time">2小时前</p>
+              </div>
+            </li>
+            
+            <li class="activity-item">
+              <div class="activity-icon" style="background-color: #8b5cf6;">
+                <i class="fas fa-yuan-sign"></i>
+              </div>
+              <div class="activity-content">
+                <p class="activity-message">会员 <strong>王五</strong> 支付了年费会员费用</p>
+                <p class="activity-time">昨天 14:30</p>
+              </div>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="js/app.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // 检查登录状态
+      if (!Auth.isLoggedIn()) {
+        window.location.href = 'login.html';
+        return;
+      }
+      
+      // 获取用户信息
+      const userInfo = Auth.getUserInfo();
+      if (userInfo && userInfo.username) {
+        // 更新用户信息显示
+        DOM.text(DOM.get('#user-name'), userInfo.username);
+        DOM.text(DOM.get('#welcome-user'), userInfo.username);
+        
+        // 设置用户头像首字母
+        const initial = userInfo.username.charAt(0).toUpperCase();
+        DOM.text(DOM.get('#user-avatar'), initial);
+      }
+      
+      // 设置当前日期
+      const today = new Date();
+      const options = {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        weekday: 'long'
+      };
+      DOM.text(DOM.get('#current-date'), today.toLocaleDateString('zh-CN', options));
+      
+      // 侧边栏切换
+      DOM.on(DOM.get('#toggle-sidebar'), 'click', function() {
+        DOM.toggleClass(DOM.get('#sidebar'), 'open');
+      });
+      
+      // 退出登录
+      DOM.on(DOM.get('#logout-button'), 'click', function() {
+        if (confirm('确定要退出登录吗？')) {
+          Auth.logout();
+        }
+      });
+      
+      // 模拟加载数据
+      function loadDashboardData() {
+        // 这里可以添加实际的API调用，获取仪表盘数据
+        // 目前使用模拟数据
+        console.log('加载仪表盘数据...');
+      }
+      
+      // 加载仪表盘数据
+      loadDashboardData();
+    });
+  </script>
+</body>
+</html>

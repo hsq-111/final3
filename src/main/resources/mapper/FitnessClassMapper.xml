@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.keshe.mapper.FitnessClassMapper">
+    <!-- 基础结果映射 -->
+    <resultMap id="FitnessClassMap" type="com.keshe.pojo.FitnessClass">
+        <id property="class_id" column="class_id"/>
+        <result property="name" column="name"/>
+        <result property="type" column="type"/>
+        <result property="instructor" column="instructor"/>
+        <result property="time" column="time"/>
+        <result property="location" column="location"/>
+        <result property="capacity" column="capacity"/>
+        <result property="status" column="status"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+    </resultMap>
+
+    <!-- 查询课程列表 -->
+    <select id="selectList" resultMap="FitnessClassMap">
+        SELECT * FROM fitness_class
+        <where>
+            <if test="category != null and category != ''">
+                AND type = #{category}
+            </if>
+            <if test="search != null and search != ''">
+                AND (name LIKE CONCAT('%', #{search}, '%') OR instructor LIKE CONCAT('%', #{search}, '%') OR location LIKE CONCAT('%', #{search}, '%'))
+            </if>
+        </where>
+        ORDER BY created_at DESC
+        LIMIT #{start}, #{pageSize}
+    </select>
+
+    <!-- 插入新课程 -->
+    <insert id="insert" useGeneratedKeys="true" keyProperty="class_id">
+        INSERT INTO fitness_class (name, type, instructor, time, location, capacity, status, created_at, updated_at)
+        VALUES (#{name}, #{type}, #{instructor}, #{time}, #{location}, #{capacity}, #{status}, #{createdAt}, #{updatedAt})
+    </insert>
+
+    <!-- 根据ID查询课程 -->
+    <select id="selectById" resultMap="FitnessClassMap">
+        SELECT * FROM fitness_class WHERE class_id = #{id}
+    </select>
+
+    <!-- 更新课程信息 -->
+    <update id="update">
+        UPDATE fitness_class
+        <set>
+            <if test="name != null">name = #{name},</if>
+            <if test="type != null">type = #{type},</if>
+            <if test="instructor != null">instructor = #{instructor},</if>
+            <if test="time != null">time = #{time},</if>
+            <if test="location != null">location = #{location},</if>
+            <if test="capacity != null">capacity = #{capacity},</if>
+            <if test="status != null">status = #{status},</if>
+            updated_at = #{updatedAt}
+        </set>
+        WHERE class_id = #{class_id}
+    </update>
+
+    <!-- 删除课程 -->
+    <delete id="delete">
+        DELETE FROM fitness_class WHERE class_id = #{id}
+    </delete>
+
+    <!-- 查询课程参与者 -->
+    <select id="selectParticipants" resultType="map">
+        SELECT
+            r.reservation_id AS id,
+            r.user_id,
+            u.username AS userName,
+            r.created_at AS registrationTime,
+            r.status
+        FROM reservation r
+        LEFT JOIN user u ON r.user_id = u.user_id
+        WHERE r.facility_id = #{id}
+        ORDER BY r.created_at DESC
+    </select>
+</mapper>

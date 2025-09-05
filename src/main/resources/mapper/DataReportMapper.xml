@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.keshe.mapper.DataReportMapper">
+    <!-- 查询总用户数 -->
+    <select id="selectTotalUsers" resultType="java.lang.Integer">
+        SELECT COUNT(*) FROM user
+    </select>
+
+    <!-- 查询今日新增用户数 -->
+    <select id="selectNewUsersToday" resultType="java.lang.Integer">
+        SELECT COUNT(*) FROM user
+        WHERE DATE(created_at) = CURRENT_DATE
+    </select>
+
+    <!-- 查询总课程数 -->
+    <select id="selectTotalClasses" resultType="java.lang.Integer">
+        SELECT COUNT(*) FROM fitness_class
+    </select>
+
+    <!-- 查询今日课程数 -->
+    <select id="selectClassesToday" resultType="java.lang.Integer">
+        SELECT COUNT(*) FROM fitness_class
+        WHERE DATE(time) = CURRENT_DATE
+        AND status = 'ACTIVE'
+    </select>
+
+    <!-- 查询总预约数 -->
+    <select id="selectTotalReservations" resultType="java.lang.Integer">
+        SELECT COUNT(*) FROM reservation
+    </select>
+
+    <!-- 查询今日预约数 -->
+    <select id="selectReservationsToday" resultType="java.lang.Integer">
+        SELECT COUNT(*) FROM reservation
+        WHERE DATE(created_at) = CURRENT_DATE
+        AND status = 'CONFIRMED'
+    </select>
+
+    <!-- 查询热门课程 -->
+    <select id="selectPopularClasses" resultType="map">
+        SELECT
+            c.class_id AS id,
+            c.name,
+            c.type,
+            c.instructor,
+            COUNT(r.reservation_id) AS participantCount
+        FROM fitness_class c
+        JOIN reservation r ON c.class_id = r.facility_id
+        WHERE r.status = 'CONFIRMED'
+        AND DATE(r.created_at) BETWEEN #{startDate} AND #{endDate}
+        GROUP BY c.class_id
+        ORDER BY participantCount DESC
+        LIMIT #{limit}
+    </select>
+
+    <!-- 查询课程类型分布 -->
+    <select id="selectClassTypeDistribution" resultType="map">
+        SELECT
+            type AS category,
+            COUNT(*) AS count
+        FROM fitness_class
+        WHERE status = 'ACTIVE'
+        GROUP BY type
+        ORDER BY count DESC
+    </select>
+
+    <!-- 查询用户活跃度趋势 -->
+    <select id="selectUserActivityTrend" resultType="map">
+        SELECT
+            DATE(r.created_at) AS date,
+            COUNT(DISTINCT r.user_id) AS activeUsers,
+            COUNT(r.reservation_id) AS reservationCount
+        FROM reservation r
+        WHERE r.status = 'CONFIRMED'
+        AND DATE(r.created_at) BETWEEN #{startDate} AND #{endDate}
+        GROUP BY DATE(r.created_at)
+        ORDER BY date
+    </select>
+
+    <!-- 查询活跃用户统计 -->
+    <select id="selectActiveUserStats" resultType="map">
+        SELECT
+            (
+                SELECT COUNT(DISTINCT user_id) FROM reservation
+                WHERE status = 'CONFIRMED'
+                AND DATE(created_at) BETWEEN #{startDate} AND #{endDate}
+            ) AS weeklyActiveUsers,
+            (
+                SELECT COUNT(*) FROM user
+                WHERE DATE(created_at) BETWEEN #{startDate} AND #{endDate}
+            ) AS newUsersDuringPeriod,
+            (
+                SELECT AVG(daily_count)
+                FROM (
+                    SELECT DATE(created_at) AS date, COUNT(DISTINCT user_id) AS daily_count
+                    FROM reservation
+                    WHERE status = 'CONFIRMED'
+                    AND DATE(created_at) BETWEEN #{startDate} AND #{endDate}
+                    GROUP BY DATE(created_at)
+                ) AS daily_stats
+            ) AS avgDailyActiveUsers
+    </select>
+
+    <!-- 查询用户预约偏好 -->
+    <select id="selectUserReservationPreferences" resultType="map">
+        SELECT
+            c.type AS category,
+            COUNT(DISTINCT r.user_id) AS userCount,
+            COUNT(r.reservation_id) AS reservationCount,
+            COUNT(DISTINCT r.user_id) * 100.0 / (
+                SELECT COUNT(DISTINCT user_id) FROM reservation
+                WHERE status = 'CONFIRMED'
+                AND DATE(created_at) BETWEEN #{startDate} AND #{endDate}
+            ) AS userPercentage
+        FROM reservation r
+        JOIN fitness_class c ON r.facility_id = c.class_id
+        WHERE r.status = 'CONFIRMED'
+        AND DATE(r.created_at) BETWEEN #{startDate} AND #{endDate}
+        GROUP BY c.type
+        ORDER BY userCount DESC
+    </select>
+</mapper>

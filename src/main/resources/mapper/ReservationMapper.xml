@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.keshe.mapper.ReservationMapper">
+    <!-- 查询预约列表 -->
+    <select id="selectList" resultType="map">
+        SELECT
+            r.reservation_id AS id,
+            r.user_id,
+            u.username AS userName,
+            r.facility_id AS classId,
+            c.name AS className,
+            r.start_time AS startTime,
+            r.end_time AS endTime,
+            r.status,
+            r.created_at AS createdAt,
+            r.updated_at AS updatedAt
+        FROM reservation r
+        LEFT JOIN user u ON r.user_id = u.user_id
+        LEFT JOIN fitness_class c ON r.facility_id = c.class_id
+        <where>
+            <if test="status != null and status != ''">
+                AND r.status = #{status}
+            </if>
+            <if test="userId != null">
+                AND r.user_id = #{userId}
+            </if>
+        </where>
+        ORDER BY r.created_at DESC
+        LIMIT #{start}, #{pageSize}
+    </select>
+
+    <!-- 根据用户ID和课程ID查询预约 -->
+    <select id="selectByUserIdAndClassId" resultType="map">
+        SELECT * FROM reservation
+        WHERE user_id = #{userId} AND facility_id = #{classId} AND status != 'CANCELLED'
+    </select>
+
+    <!-- 查询课程参与者数量 -->
+    <select id="selectParticipantCount" resultType="java.lang.Integer">
+        SELECT COUNT(*) FROM reservation
+        WHERE facility_id = #{classId} AND status = 'CONFIRMED'
+    </select>
+
+    <!-- 查询课程容量 -->
+    <select id="selectClassCapacity" resultType="map">
+        SELECT class_id, capacity FROM fitness_class WHERE class_id = #{classId}
+    </select>
+
+    <!-- 插入新预约 -->
+    <insert id="insert" useGeneratedKeys="true" keyProperty="reservation_id">
+        INSERT INTO reservation (user_id, facility_id, start_time, end_time, status, created_at, updated_at)
+        VALUES (#{user_id}, #{facility_id}, #{start_time}, #{end_time}, #{status}, #{created_at}, #{updated_at})
+    </insert>
+
+    <!-- 根据ID查询预约 -->
+    <select id="selectById" resultType="map">
+        SELECT
+            r.reservation_id AS id,
+            r.user_id,
+            u.username AS userName,
+            r.facility_id AS classId,
+            c.name AS className,
+            r.start_time AS startTime,
+            r.end_time AS endTime,
+            r.status,
+            r.created_at AS createdAt,
+            r.updated_at AS updatedAt
+        FROM reservation r
+        LEFT JOIN user u ON r.user_id = u.user_id
+        LEFT JOIN fitness_class c ON r.facility_id = c.class_id
+        WHERE r.reservation_id = #{id}
+    </select>
+
+    <!-- 更新预约信息 -->
+    <update id="update">
+        UPDATE reservation
+        <set>
+            <if test="status != null">status = #{status},</if>
+            <if test="startTime != null">start_time = #{startTime},</if>
+            <if test="endTime != null">end_time = #{endTime},</if>
+            updated_at = #{updatedAt}
+        </set>
+        WHERE reservation_id = #{id}
+    </update>
+</mapper>
