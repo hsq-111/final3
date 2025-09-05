@@ -1,0 +1,986 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>器材管理 - 健身管理系统</title>
+  <link rel="stylesheet" href="css/style.css">
+  <!-- 引入Font Awesome图标库 -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    /* 继承仪表盘布局样式 */
+    .dashboard-container {
+      display: flex;
+      min-height: 100vh;
+    }
+    
+    /* 侧边栏导航 */
+    .sidebar {
+      width: 240px;
+      background-color: #1e293b;
+      color: white;
+      position: fixed;
+      height: 100vh;
+      overflow-y: auto;
+      transition: width 0.3s ease;
+      z-index: 100;
+    }
+    
+    .sidebar-header {
+      padding: 20px;
+      border-bottom: 1px solid #334155;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    
+    .sidebar-header i {
+      font-size: 1.5rem;
+      color: #3b82f6;
+    }
+    
+    .sidebar-header h2 {
+      margin: 0;
+      font-size: 1.25rem;
+      font-weight: 600;
+    }
+    
+    .nav-menu {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    
+    .nav-item {
+      position: relative;
+    }
+    
+    .nav-link {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 16px 20px;
+      color: #cbd5e1;
+      text-decoration: none;
+      transition: all 0.2s ease;
+    }
+    
+    .nav-link:hover {
+      background-color: #334155;
+      color: white;
+    }
+    
+    .nav-link.active {
+      background-color: #3b82f6;
+      color: white;
+    }
+    
+    .nav-link i {
+      font-size: 1.125rem;
+      width: 24px;
+      text-align: center;
+    }
+    
+    /* 主内容区域 */
+    .main-content {
+      flex: 1;
+      margin-left: 240px;
+      transition: margin-left 0.3s ease;
+    }
+    
+    /* 顶部导航 */
+    .top-nav {
+      background-color: white;
+      padding: 16px 24px;
+      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+    
+    .top-nav-left {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    
+    .toggle-sidebar {
+      font-size: 1.25rem;
+      cursor: pointer;
+      color: #334155;
+    }
+    
+    .top-nav-right {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    
+    .user-profile {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+    }
+    
+    .user-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background-color: #3b82f6;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: 600;
+    }
+    
+    .user-info {
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .user-name {
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: #1e293b;
+    }
+    
+    .user-role {
+      font-size: 0.75rem;
+      color: #64748b;
+    }
+    
+    /* 内容包装器 */
+    .content-wrapper {
+      padding: 24px;
+    }
+    
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 24px;
+    }
+    
+    .page-header h1 {
+      margin: 0;
+      font-size: 1.875rem;
+      color: #1e293b;
+    }
+    
+    .page-header p {
+      color: #64748b;
+      margin-top: 4px;
+    }
+    
+    /* 工具栏 */
+    .toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      gap: 16px;
+    }
+    
+    .search-box {
+      flex: 1;
+      max-width: 300px;
+      position: relative;
+    }
+    
+    .search-input {
+      width: 100%;
+      padding: 10px 16px 10px 40px;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      font-size: 0.875rem;
+    }
+    
+    .search-icon {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #64748b;
+    }
+    
+    .toolbar-actions {
+      display: flex;
+      gap: 12px;
+    }
+    
+    /* 表格样式 */
+    .table-container {
+      background-color: white;
+      border-radius: 12px;
+      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+    }
+    
+    .table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    
+    .table th,
+    .table td {
+      padding: 12px 16px;
+      text-align: left;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    
+    .table th {
+      background-color: #f8fafc;
+      font-weight: 600;
+      color: #374151;
+      font-size: 0.875rem;
+    }
+    
+    .table td {
+      font-size: 0.875rem;
+      color: #4b5563;
+    }
+    
+    .table tbody tr:hover {
+      background-color: #f9fafb;
+    }
+    
+    /* 状态标签 */
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 500;
+    }
+    
+    .status-available {
+      background-color: #d1fae5;
+      color: #065f46;
+    }
+    
+    .status-busy {
+      background-color: #fef3c7;
+      color: #92400e;
+    }
+    
+    .status-maintenance {
+      background-color: #fee2e2;
+      color: #991b1b;
+    }
+    
+    /* 操作按钮 */
+    .action-buttons {
+      display: flex;
+      gap: 8px;
+    }
+    
+    .btn-sm {
+      padding: 6px 12px;
+      font-size: 0.75rem;
+    }
+    
+    .btn-edit {
+      background-color: #3b82f6;
+      color: white;
+    }
+    
+    .btn-edit:hover {
+      background-color: #2563eb;
+    }
+    
+    .btn-delete {
+      background-color: #ef4444;
+      color: white;
+    }
+    
+    .btn-delete:hover {
+      background-color: #dc2626;
+    }
+    
+    /* 模态框 */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+    }
+    
+    .modal.show {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .modal-content {
+      background-color: white;
+      border-radius: 12px;
+      padding: 24px;
+      width: 90%;
+      max-width: 500px;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    
+    .modal-title {
+      margin: 0;
+      font-size: 1.25rem;
+      color: #1e293b;
+    }
+    
+    .modal-close {
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      cursor: pointer;
+      color: #64748b;
+    }
+    
+    .modal-close:hover {
+      color: #374151;
+    }
+    
+    .modal-footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+      margin-top: 20px;
+    }
+    
+    /* 加载状态 */
+    .loading-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 40px;
+    }
+    
+    .loading-spinner {
+      border: 3px solid #f3f4f6;
+      border-top: 3px solid #3b82f6;
+      border-radius: 50%;
+      width: 24px;
+      height: 24px;
+      animation: spin 1s linear infinite;
+    }
+    
+    /* 空状态 */
+    .empty-state {
+      text-align: center;
+      padding: 40px 20px;
+      color: #64748b;
+    }
+    
+    .empty-state i {
+      font-size: 3rem;
+      margin-bottom: 16px;
+      color: #cbd5e1;
+    }
+    
+    /* 响应式设计 */
+    @media (max-width: 768px) {
+      .sidebar {
+        transform: translateX(-100%);
+      }
+      
+      .sidebar.open {
+        transform: translateX(0);
+      }
+      
+      .main-content {
+        margin-left: 0;
+      }
+      
+      .toolbar {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      
+      .search-box {
+        max-width: none;
+      }
+      
+      .table-container {
+        overflow-x: auto;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="dashboard-container">
+    <!-- 侧边栏导航 -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <i class="fas fa-dumbbell"></i>
+        <h2>健身管理系统</h2>
+      </div>
+      
+      <ul class="nav-menu">
+        <li class="nav-item">
+          <a href="dashboard.html" class="nav-link">
+            <i class="fas fa-home"></i>
+            <span>首页</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="members.html" class="nav-link">
+            <i class="fas fa-users"></i>
+            <span>会员管理</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="equipment.html" class="nav-link active">
+            <i class="fas fa-tools"></i>
+            <span>器材管理</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="trainers.html" class="nav-link">
+            <i class="fas fa-user-tie"></i>
+            <span>教练管理</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="classes.html" class="nav-link">
+            <i class="fas fa-calendar-alt"></i>
+            <span>课程管理</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="appointments.html" class="nav-link">
+            <i class="fas fa-clipboard-list"></i>
+            <span>预约管理</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="reports.html" class="nav-link">
+            <i class="fas fa-chart-bar"></i>
+            <span>数据报表</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="settings.html" class="nav-link">
+            <i class="fas fa-cog"></i>
+            <span>系统设置</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="javascript:void(0)" id="logout-button" class="nav-link">
+            <i class="fas fa-sign-out-alt"></i>
+            <span>退出登录</span>
+          </a>
+        </li>
+      </ul>
+    </aside>
+    
+    <!-- 主内容区域 -->
+    <main class="main-content">
+      <!-- 顶部导航 -->
+      <nav class="top-nav">
+        <div class="top-nav-left">
+          <i class="fas fa-bars toggle-sidebar" id="toggle-sidebar"></i>
+        </div>
+        <div class="top-nav-right">
+          <div class="user-profile">
+            <div class="user-avatar" id="user-avatar">AD</div>
+            <div class="user-info">
+              <span class="user-name" id="user-name">管理员</span>
+              <span class="user-role">超级管理员</span>
+            </div>
+          </div>
+        </div>
+      </nav>
+      
+      <!-- 内容包装器 -->
+      <div class="content-wrapper">
+        <!-- 页面标题 -->
+        <div class="page-header">
+          <div>
+            <h1>器材管理</h1>
+            <p>管理健身房所有器材设备</p>
+          </div>
+        </div>
+        
+        <!-- 工具栏 -->
+        <div class="toolbar">
+          <div class="search-box">
+            <i class="fas fa-search search-icon"></i>
+            <input type="text" class="search-input" placeholder="搜索器材名称、类型或位置..." id="search-input">
+          </div>
+          <div class="toolbar-actions">
+            <button class="btn btn-primary" id="add-equipment-btn">
+              <i class="fas fa-plus mr-2"></i>添加器材
+            </button>
+          </div>
+        </div>
+        
+        <!-- 器材列表 -->
+        <div class="table-container">
+          <div id="loading-container" class="loading-container" style="display: none;">
+            <div class="loading-spinner"></div>
+            <span style="margin-left: 12px;">加载中...</span>
+          </div>
+          
+          <table class="table" id="equipment-table" style="display: none;">
+            <thead>
+              <tr>
+                <th>器材ID</th>
+                <th>器材名称</th>
+                <th>器材类型</th>
+                <th>位置</th>
+                <th>容量</th>
+                <th>状态</th>
+                <th>创建时间</th>
+                <th>操作</th>
+              </tr>
+            </thead>
+            <tbody id="equipment-tbody">
+              <!-- 器材数据将在这里渲染 -->
+            </tbody>
+          </table>
+          
+          <div id="empty-state" class="empty-state" style="display: none;">
+            <i class="fas fa-tools"></i>
+            <h3>暂无器材数据</h3>
+            <p>点击上方"添加器材"按钮开始添加器材</p>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- 添加/编辑器材模态框 -->
+  <div class="modal" id="equipment-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title" id="modal-title">添加器材</h3>
+        <button class="modal-close" id="modal-close">&times;</button>
+      </div>
+      
+      <form id="equipment-form">
+        <div class="form-group">
+          <label for="equipment-name" class="form-label">器材名称</label>
+          <input type="text" id="equipment-name" name="name" class="form-input" placeholder="请输入器材名称" required>
+          <div id="name-error" class="error-message"></div>
+        </div>
+        
+        <div class="form-group">
+          <label for="equipment-type" class="form-label">器材类型</label>
+          <select id="equipment-type" name="type" class="form-input" required>
+            <option value="">请选择器材类型</option>
+            <option value="有氧器材">有氧器材</option>
+            <option value="力量器材">力量器材</option>
+            <option value="功能性器材">功能性器材</option>
+            <option value="柔韧性器材">柔韧性器材</option>
+          </select>
+          <div id="type-error" class="error-message"></div>
+        </div>
+        
+        <div class="form-group">
+          <label for="equipment-location" class="form-label">器材位置</label>
+          <input type="text" id="equipment-location" name="location" class="form-input" placeholder="请输入器材位置" required>
+          <div id="location-error" class="error-message"></div>
+        </div>
+        
+        <div class="form-group">
+          <label for="equipment-capacity" class="form-label">容量</label>
+          <input type="number" id="equipment-capacity" name="capacity" class="form-input" placeholder="请输入容量" min="1" required>
+          <div id="capacity-error" class="error-message"></div>
+        </div>
+        
+        <div class="form-group">
+          <label for="equipment-status" class="form-label">状态</label>
+          <select id="equipment-status" name="status" class="form-input" required>
+            <option value="AVAILABLE">可用</option>
+            <option value="BUSY">使用中</option>
+            <option value="MAINTENANCE">维护中</option>
+          </select>
+          <div id="status-error" class="error-message"></div>
+        </div>
+        
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" id="cancel-btn">取消</button>
+          <button type="submit" class="btn btn-primary" id="submit-btn">保存</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="js/app.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // 检查登录状态
+      if (!Auth.isLoggedIn()) {
+        window.location.href = 'login.html';
+        return;
+      }
+      
+      // 页面元素
+      const searchInput = DOM.get('#search-input');
+      const addEquipmentBtn = DOM.get('#add-equipment-btn');
+      const equipmentTable = DOM.get('#equipment-table');
+      const equipmentTbody = DOM.get('#equipment-tbody');
+      const loadingContainer = DOM.get('#loading-container');
+      const emptyState = DOM.get('#empty-state');
+      
+      // 模态框元素
+      const equipmentModal = DOM.get('#equipment-modal');
+      const modalTitle = DOM.get('#modal-title');
+      const modalClose = DOM.get('#modal-close');
+      const equipmentForm = DOM.get('#equipment-form');
+      const cancelBtn = DOM.get('#cancel-btn');
+      const submitBtn = DOM.get('#submit-btn');
+      
+      // 表单元素
+      const equipmentName = DOM.get('#equipment-name');
+      const equipmentType = DOM.get('#equipment-type');
+      const equipmentLocation = DOM.get('#equipment-location');
+      const equipmentCapacity = DOM.get('#equipment-capacity');
+      const equipmentStatus = DOM.get('#equipment-status');
+      
+      // 用户信息
+      const userInfo = Auth.getUserInfo();
+      if (userInfo && userInfo.username) {
+        DOM.text(DOM.get('#user-name'), userInfo.username);
+        const initial = userInfo.username.charAt(0).toUpperCase();
+        DOM.text(DOM.get('#user-avatar'), initial);
+      }
+      
+      // 数据状态
+      let currentEditingId = null;
+      let equipmentData = [];
+      
+      // 初始化页面
+      init();
+      
+      async function init() {
+        await loadEquipmentData();
+        bindEvents();
+      }
+      
+      function bindEvents() {
+        // 侧边栏切换
+        DOM.on(DOM.get('#toggle-sidebar'), 'click', function() {
+          DOM.toggleClass(DOM.get('#sidebar'), 'open');
+        });
+        
+        // 退出登录
+        DOM.on(DOM.get('#logout-button'), 'click', function() {
+          if (confirm('确定要退出登录吗？')) {
+            Auth.logout();
+          }
+        });
+        
+        // 搜索功能
+        DOM.on(searchInput, 'input', Utils.debounce(function() {
+          filterEquipment(this.value.trim());
+        }, 300));
+        
+        // 添加器材
+        DOM.on(addEquipmentBtn, 'click', function() {
+          openModal('add');
+        });
+        
+        // 模态框关闭
+        DOM.on([modalClose, cancelBtn], 'click', function() {
+          closeModal();
+        });
+        
+        // 模态框背景点击关闭
+        DOM.on(equipmentModal, 'click', function(e) {
+          if (e.target === equipmentModal) {
+            closeModal();
+          }
+        });
+        
+        // 表单提交
+        DOM.on(equipmentForm, 'submit', function(e) {
+          e.preventDefault();
+          handleFormSubmit();
+        });
+      }
+      
+      // 加载器材数据
+      async function loadEquipmentData() {
+        try {
+          showLoading();
+          const response = await API.get('/admin/facilities');
+          
+          if (response.code === 200) {
+            equipmentData = response.data || [];
+            renderEquipmentTable(equipmentData);
+          } else {
+            Toast.error(response.msg || '获取器材数据失败');
+            showEmptyState();
+          }
+        } catch (error) {
+          console.error('Load equipment data error:', error);
+          Toast.error('获取器材数据失败，请稍后重试');
+          showEmptyState();
+        } finally {
+          hideLoading();
+        }
+      }
+      
+      // 渲染器材表格
+      function renderEquipmentTable(data) {
+        if (!data || data.length === 0) {
+          showEmptyState();
+          return;
+        }
+        
+        DOM.empty(equipmentTbody);
+        
+        data.forEach(equipment => {
+          const row = DOM.create('tr');
+          row.innerHTML = `
+            <td>${equipment.facility_id}</td>
+            <td>${equipment.name}</td>
+            <td>${equipment.type}</td>
+            <td>${equipment.location}</td>
+            <td>${equipment.capacity}</td>
+            <td>
+              <span class="status-badge status-${equipment.status.toLowerCase()}">
+                ${getStatusText(equipment.status)}
+              </span>
+            </td>
+            <td>${Utils.formatDate(equipment.created_at, 'YYYY-MM-DD')}</td>
+            <td>
+              <div class="action-buttons">
+                <button class="btn btn-sm btn-edit" onclick="editEquipment(${equipment.facility_id})">
+                  <i class="fas fa-edit"></i> 编辑
+                </button>
+                <button class="btn btn-sm btn-delete" onclick="deleteEquipment(${equipment.facility_id}, '${equipment.name}')">
+                  <i class="fas fa-trash"></i> 删除
+                </button>
+              </div>
+            </td>
+          `;
+          equipmentTbody.appendChild(row);
+        });
+        
+        showTable();
+      }
+      
+      // 获取状态文本
+      function getStatusText(status) {
+        const statusMap = {
+          'AVAILABLE': '可用',
+          'BUSY': '使用中',
+          'MAINTENANCE': '维护中'
+        };
+        return statusMap[status] || status;
+      }
+      
+      // 过滤器材
+      function filterEquipment(searchTerm) {
+        if (!searchTerm) {
+          renderEquipmentTable(equipmentData);
+          return;
+        }
+        
+        const filteredData = equipmentData.filter(equipment => 
+          equipment.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          equipment.type.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          equipment.location.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+        
+        renderEquipmentTable(filteredData);
+      }
+      
+      // 打开模态框
+      function openModal(mode, equipmentId = null) {
+        currentEditingId = equipmentId;
+        
+        if (mode === 'add') {
+          DOM.text(modalTitle, '添加器材');
+          DOM.text(submitBtn, '添加器材');
+          equipmentForm.reset();
+        } else if (mode === 'edit') {
+          DOM.text(modalTitle, '编辑器材');
+          DOM.text(submitBtn, '保存修改');
+          
+          // 填充表单数据
+          const equipment = equipmentData.find(item => item.facility_id === equipmentId);
+          if (equipment) {
+            equipmentName.value = equipment.name;
+            equipmentType.value = equipment.type;
+            equipmentLocation.value = equipment.location;
+            equipmentCapacity.value = equipment.capacity;
+            equipmentStatus.value = equipment.status;
+          }
+        }
+        
+        DOM.addClass(equipmentModal, 'show');
+      }
+      
+      // 关闭模态框
+      function closeModal() {
+        DOM.removeClass(equipmentModal, 'show');
+        currentEditingId = null;
+        equipmentForm.reset();
+        clearFormErrors();
+      }
+      
+      // 处理表单提交
+      async function handleFormSubmit() {
+        if (!validateForm()) {
+          return;
+        }
+        
+        const formData = {
+          name: equipmentName.value.trim(),
+          type: equipmentType.value,
+          location: equipmentLocation.value.trim(),
+          capacity: parseInt(equipmentCapacity.value),
+          status: equipmentStatus.value
+        };
+        
+        try {
+          DOM.disableButton(submitBtn, '<i class="fas fa-spinner fa-spin mr-2"></i>保存中...');
+          
+          let response;
+          if (currentEditingId) {
+            // 编辑器材
+            response = await API.put(`/admin/facilities/${currentEditingId}`, formData, true, 'application/json');
+          } else {
+            // 添加器材
+            response = await API.post('/admin/facilities', formData, true, 'application/json');
+          }
+          
+          if (response.code === 200) {
+            Toast.success(response.msg || (currentEditingId ? '器材修改成功' : '器材添加成功'));
+            closeModal();
+            await loadEquipmentData();
+          } else {
+            Toast.error(response.msg || '操作失败');
+          }
+        } catch (error) {
+          console.error('Submit equipment error:', error);
+          Toast.error('操作失败，请稍后重试');
+        } finally {
+          DOM.enableButton(submitBtn);
+        }
+      }
+      
+      // 表单验证
+      function validateForm() {
+        clearFormErrors();
+        let isValid = true;
+        
+        // 验证器材名称
+        if (!equipmentName.value.trim()) {
+          showFieldError('name-error', '器材名称不能为空');
+          isValid = false;
+        }
+        
+        // 验证器材类型
+        if (!equipmentType.value) {
+          showFieldError('type-error', '请选择器材类型');
+          isValid = false;
+        }
+        
+        // 验证位置
+        if (!equipmentLocation.value.trim()) {
+          showFieldError('location-error', '器材位置不能为空');
+          isValid = false;
+        }
+        
+        // 验证容量
+        const capacity = parseInt(equipmentCapacity.value);
+        if (!capacity || capacity < 1) {
+          showFieldError('capacity-error', '容量必须为正整数');
+          isValid = false;
+        }
+        
+        return isValid;
+      }
+      
+      // 显示字段错误
+      function showFieldError(errorId, message) {
+        const errorElement = DOM.get(`#${errorId}`);
+        if (errorElement) {
+          errorElement.textContent = message;
+        }
+      }
+      
+      // 清除表单错误
+      function clearFormErrors() {
+        const errorElements = equipmentModal.querySelectorAll('.error-message');
+        errorElements.forEach(element => {
+          element.textContent = '';
+        });
+      }
+      
+      // 显示加载状态
+      function showLoading() {
+        loadingContainer.style.display = 'flex';
+        equipmentTable.style.display = 'none';
+        emptyState.style.display = 'none';
+      }
+      
+      // 隐藏加载状态
+      function hideLoading() {
+        loadingContainer.style.display = 'none';
+      }
+      
+      // 显示表格
+      function showTable() {
+        equipmentTable.style.display = 'table';
+        emptyState.style.display = 'none';
+      }
+      
+      // 显示空状态
+      function showEmptyState() {
+        equipmentTable.style.display = 'none';
+        emptyState.style.display = 'block';
+      }
+      
+      // 全局函数：编辑器材
+      window.editEquipment = function(equipmentId) {
+        openModal('edit', equipmentId);
+      };
+      
+      // 全局函数：删除器材
+      window.deleteEquipment = function(equipmentId, equipmentName) {
+        if (confirm(`确定要删除器材"${equipmentName}"吗？此操作不可恢复。`)) {
+          handleDeleteEquipment(equipmentId);
+        }
+      };
+      
+      // 处理删除器材
+      async function handleDeleteEquipment(equipmentId) {
+        try {
+          const response = await API.delete(`/admin/facilities/${equipmentId}`);
+          
+          if (response.code === 200) {
+            Toast.success(response.msg || '器材删除成功');
+            await loadEquipmentData();
+          } else {
+            Toast.error(response.msg || '删除失败');
+          }
+        } catch (error) {
+          console.error('Delete equipment error:', error);
+          Toast.error('删除失败，请稍后重试');
+        }
+      }
+    });
+  </script>
+</body>
+</html>

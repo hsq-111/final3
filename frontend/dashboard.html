@@ -512,53 +512,10 @@
         </div>
         
         <!-- 数据统计卡片 -->
-        <div class="stats-grid">
-          <div class="stat-card">
-            <div class="stat-card-header">
-              <div class="stat-icon users">
-                <i class="fas fa-users"></i>
-              </div>
-            </div>
-            <div class="stat-card-content">
-              <h3>156</h3>
-              <p>总会员数</p>
-            </div>
-          </div>
-          
-          <div class="stat-card">
-            <div class="stat-card-header">
-              <div class="stat-icon equipment">
-                <i class="fas fa-tools"></i>
-              </div>
-            </div>
-            <div class="stat-card-content">
-              <h3>48</h3>
-              <p>器材总数</p>
-            </div>
-          </div>
-          
-          <div class="stat-card">
-            <div class="stat-card-header">
-              <div class="stat-icon appointments">
-                <i class="fas fa-clipboard-list"></i>
-              </div>
-            </div>
-            <div class="stat-card-content">
-              <h3>32</h3>
-              <p>今日预约</p>
-            </div>
-          </div>
-          
-          <div class="stat-card">
-            <div class="stat-card-header">
-              <div class="stat-icon revenue">
-                <i class="fas fa-yuan-sign"></i>
-              </div>
-            </div>
-            <div class="stat-card-content">
-              <h3>¥12,560</h3>
-              <p>本月收入</p>
-            </div>
+        <div class="stats-grid" id="stats-grid">
+          <div id="stats-loading" class="loading-container">
+            <div class="loading-spinner"></div>
+            <span style="margin-left: 12px;">加载统计数据...</span>
           </div>
         </div>
         
@@ -601,46 +558,13 @@
             <a href="#" class="view-all">查看全部</a>
           </div>
           
-          <ul class="activities-list">
-            <li class="activity-item">
-              <div class="activity-icon" style="background-color: #3b82f6;">
-                <i class="fas fa-user-plus"></i>
-              </div>
-              <div class="activity-content">
-                <p class="activity-message">新会员 <strong>张三</strong> 注册成功</p>
-                <p class="activity-time">10分钟前</p>
-              </div>
-            </li>
-            
-            <li class="activity-item">
-              <div class="activity-icon" style="background-color: #10b981;">
-                <i class="fas fa-clipboard-check"></i>
-              </div>
-              <div class="activity-content">
-                <p class="activity-message">会员 <strong>李四</strong> 完成了私教课程预约</p>
-                <p class="activity-time">30分钟前</p>
-              </div>
-            </li>
-            
-            <li class="activity-item">
-              <div class="activity-icon" style="background-color: #f59e0b;">
-                <i class="fas fa-tools"></i>
-              </div>
-              <div class="activity-content">
-                <p class="activity-message">器材 <strong>跑步机A3</strong> 状态更新为需要维护</p>
-                <p class="activity-time">2小时前</p>
-              </div>
-            </li>
-            
-            <li class="activity-item">
-              <div class="activity-icon" style="background-color: #8b5cf6;">
-                <i class="fas fa-yuan-sign"></i>
-              </div>
-              <div class="activity-content">
-                <p class="activity-message">会员 <strong>王五</strong> 支付了年费会员费用</p>
-                <p class="activity-time">昨天 14:30</p>
-              </div>
-            </li>
+          <div id="activities-loading" class="loading-container" style="display: none;">
+            <div class="loading-spinner"></div>
+            <span style="margin-left: 12px;">加载活动数据...</span>
+          </div>
+          
+          <ul class="activities-list" id="activities-list">
+            <!-- 活动数据将在这里渲染 -->
           </ul>
         </div>
       </div>
@@ -690,11 +614,170 @@
         }
       });
       
-      // 模拟加载数据
-      function loadDashboardData() {
-        // 这里可以添加实际的API调用，获取仪表盘数据
-        // 目前使用模拟数据
-        console.log('加载仪表盘数据...');
+      // 加载仪表盘数据
+      async function loadDashboardData() {
+        await Promise.all([
+          loadOverviewStats(),
+          loadRecentActivities()
+        ]);
+      }
+      
+      // 加载概览统计
+      async function loadOverviewStats() {
+        try {
+          const statsGrid = DOM.get('#stats-grid');
+          const statsLoading = DOM.get('#stats-loading');
+          
+          statsLoading.style.display = 'flex';
+          
+          const response = await API.get('/data/overview');
+          
+          if (response.code === 200) {
+            const data = response.data;
+            renderOverviewStats(data);
+          } else {
+            // 使用默认数据
+            renderOverviewStats({
+              total_users: 156,
+              total_facilities: 48,
+              confirmed_reservations: 32,
+              upcoming_classes: 20
+            });
+          }
+        } catch (error) {
+          console.error('Load overview stats error:', error);
+          // 使用默认数据
+          renderOverviewStats({
+            total_users: 156,
+            total_facilities: 48,
+            confirmed_reservations: 32,
+            upcoming_classes: 20
+          });
+        } finally {
+          DOM.get('#stats-loading').style.display = 'none';
+        }
+      }
+      
+      // 渲染概览统计
+      function renderOverviewStats(data) {
+        const statsGrid = DOM.get('#stats-grid');
+        
+        statsGrid.innerHTML = `
+          <div class="stat-card">
+            <div class="stat-card-header">
+              <div class="stat-icon users">
+                <i class="fas fa-users"></i>
+              </div>
+            </div>
+            <div class="stat-card-content">
+              <h3>${data.total_users || 0}</h3>
+              <p>总会员数</p>
+            </div>
+          </div>
+          
+          <div class="stat-card">
+            <div class="stat-card-header">
+              <div class="stat-icon equipment">
+                <i class="fas fa-tools"></i>
+              </div>
+            </div>
+            <div class="stat-card-content">
+              <h3>${data.total_facilities || 0}</h3>
+              <p>器材总数</p>
+            </div>
+          </div>
+          
+          <div class="stat-card">
+            <div class="stat-card-header">
+              <div class="stat-icon appointments">
+                <i class="fas fa-clipboard-list"></i>
+              </div>
+            </div>
+            <div class="stat-card-content">
+              <h3>${data.confirmed_reservations || 0}</h3>
+              <p>已确认预约</p>
+            </div>
+          </div>
+          
+          <div class="stat-card">
+            <div class="stat-card-header">
+              <div class="stat-icon revenue">
+                <i class="fas fa-calendar-alt"></i>
+              </div>
+            </div>
+            <div class="stat-card-content">
+              <h3>${data.upcoming_classes || 0}</h3>
+              <p>即将开始的课程</p>
+            </div>
+          </div>
+        `;
+      }
+      
+      // 加载最近活动
+      async function loadRecentActivities() {
+        try {
+          const activitiesLoading = DOM.get('#activities-loading');
+          const activitiesList = DOM.get('#activities-list');
+          
+          activitiesLoading.style.display = 'flex';
+          
+          // 模拟活动数据
+          const activities = [
+            {
+              icon: 'fas fa-user-plus',
+              iconColor: '#3b82f6',
+              message: '新用户注册成功',
+              time: '10分钟前'
+            },
+            {
+              icon: 'fas fa-calendar-check',
+              iconColor: '#10b981',
+              message: '课程预约确认',
+              time: '30分钟前'
+            },
+            {
+              icon: 'fas fa-tools',
+              iconColor: '#f59e0b',
+              message: '器材状态更新',
+              time: '2小时前'
+            },
+            {
+              icon: 'fas fa-chart-line',
+              iconColor: '#8b5cf6',
+              message: '系统数据更新',
+              time: '昨天 14:30'
+            }
+          ];
+          
+          renderRecentActivities(activities);
+        } catch (error) {
+          console.error('Load recent activities error:', error);
+          renderRecentActivities([]);
+        } finally {
+          DOM.get('#activities-loading').style.display = 'none';
+        }
+      }
+      
+      // 渲染最近活动
+      function renderRecentActivities(activities) {
+        const activitiesList = DOM.get('#activities-list');
+        
+        if (activities.length === 0) {
+          activitiesList.innerHTML = '<li style="text-align: center; color: #9ca3af; padding: 20px;">暂无活动记录</li>';
+          return;
+        }
+        
+        activitiesList.innerHTML = activities.map(activity => `
+          <li class="activity-item">
+            <div class="activity-icon" style="background-color: ${activity.iconColor};">
+              <i class="${activity.icon}"></i>
+            </div>
+            <div class="activity-content">
+              <p class="activity-message">${activity.message}</p>
+              <p class="activity-time">${activity.time}</p>
+            </div>
+          </li>
+        `).join('');
       }
       
       // 加载仪表盘数据

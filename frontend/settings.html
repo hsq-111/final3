@@ -1,0 +1,1366 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>系统设置 - 健身管理系统</title>
+  <link rel="stylesheet" href="css/style.css">
+  <!-- 引入Font Awesome图标库 -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    /* 继承仪表盘布局样式 */
+    .dashboard-container {
+      display: flex;
+      min-height: 100vh;
+    }
+    
+    /* 侧边栏导航 */
+    .sidebar {
+      width: 240px;
+      background-color: #1e293b;
+      color: white;
+      position: fixed;
+      height: 100vh;
+      overflow-y: auto;
+      transition: width 0.3s ease;
+      z-index: 100;
+    }
+    
+    .sidebar-header {
+      padding: 20px;
+      border-bottom: 1px solid #334155;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    
+    .sidebar-header i {
+      font-size: 1.5rem;
+      color: #3b82f6;
+    }
+    
+    .sidebar-header h2 {
+      margin: 0;
+      font-size: 1.25rem;
+      font-weight: 600;
+    }
+    
+    .nav-menu {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    
+    .nav-item {
+      position: relative;
+    }
+    
+    .nav-link {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 16px 20px;
+      color: #cbd5e1;
+      text-decoration: none;
+      transition: all 0.2s ease;
+    }
+    
+    .nav-link:hover {
+      background-color: #334155;
+      color: white;
+    }
+    
+    .nav-link.active {
+      background-color: #3b82f6;
+      color: white;
+    }
+    
+    .nav-link i {
+      font-size: 1.125rem;
+      width: 24px;
+      text-align: center;
+    }
+    
+    /* 主内容区域 */
+    .main-content {
+      flex: 1;
+      margin-left: 240px;
+      transition: margin-left 0.3s ease;
+    }
+    
+    /* 顶部导航 */
+    .top-nav {
+      background-color: white;
+      padding: 16px 24px;
+      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+    
+    .top-nav-left {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    
+    .toggle-sidebar {
+      font-size: 1.25rem;
+      cursor: pointer;
+      color: #334155;
+    }
+    
+    .top-nav-right {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    
+    .user-profile {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+    }
+    
+    .user-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background-color: #3b82f6;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: 600;
+    }
+    
+    .user-info {
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .user-name {
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: #1e293b;
+    }
+    
+    .user-role {
+      font-size: 0.75rem;
+      color: #64748b;
+    }
+    
+    /* 内容包装器 */
+    .content-wrapper {
+      padding: 24px;
+    }
+    
+    .page-header {
+      margin-bottom: 24px;
+    }
+    
+    .page-header h1 {
+      margin: 0;
+      font-size: 1.875rem;
+      color: #1e293b;
+    }
+    
+    .page-header p {
+      color: #64748b;
+      margin-top: 4px;
+    }
+    
+    /* 设置面板布局 */
+    .settings-container {
+      display: grid;
+      grid-template-columns: 250px 1fr;
+      gap: 24px;
+    }
+    
+    /* 设置侧边栏 */
+    .settings-sidebar {
+      background-color: white;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+      height: fit-content;
+      position: sticky;
+      top: 100px;
+    }
+    
+    .settings-nav {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    
+    .settings-nav-item {
+      margin-bottom: 8px;
+    }
+    
+    .settings-nav-link {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      color: #64748b;
+      text-decoration: none;
+      border-radius: 8px;
+      transition: all 0.2s ease;
+    }
+    
+    .settings-nav-link:hover {
+      background-color: #f1f5f9;
+      color: #334155;
+    }
+    
+    .settings-nav-link.active {
+      background-color: #dbeafe;
+      color: #3b82f6;
+    }
+    
+    .settings-nav-link i {
+      font-size: 1rem;
+      width: 20px;
+      text-align: center;
+    }
+    
+    /* 设置面板 */
+    .settings-panel {
+      background-color: white;
+      border-radius: 12px;
+      padding: 32px;
+      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+    }
+    
+    .settings-section {
+      display: none;
+    }
+    
+    .settings-section.active {
+      display: block;
+    }
+    
+    .section-header {
+      margin-bottom: 24px;
+    }
+    
+    .section-title {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: #1e293b;
+      margin: 0 0 8px 0;
+    }
+    
+    .section-description {
+      color: #64748b;
+      margin: 0;
+    }
+    
+    /* 设置项 */
+    .setting-item {
+      margin-bottom: 24px;
+      padding-bottom: 24px;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    
+    .setting-item:last-child {
+      margin-bottom: 0;
+      padding-bottom: 0;
+      border-bottom: none;
+    }
+    
+    .setting-label {
+      font-size: 1rem;
+      font-weight: 500;
+      color: #1e293b;
+      margin-bottom: 8px;
+      display: block;
+    }
+    
+    .setting-description {
+      color: #64748b;
+      font-size: 0.875rem;
+      margin-bottom: 12px;
+    }
+    
+    .setting-control {
+      width: 100%;
+      max-width: 400px;
+    }
+    
+    /* 表单样式 */
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+    
+    /* 开关按钮 */
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 48px;
+      height: 24px;
+    }
+    
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+    
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #cbd5e1;
+      transition: .4s;
+      border-radius: 24px;
+    }
+    
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 18px;
+      width: 18px;
+      left: 3px;
+      bottom: 3px;
+      background-color: white;
+      transition: .4s;
+      border-radius: 50%;
+    }
+    
+    input:checked + .slider {
+      background-color: #3b82f6;
+    }
+    
+    input:checked + .slider:before {
+      transform: translateX(24px);
+    }
+    
+    /* 按钮组 */
+    .button-group {
+      display: flex;
+      gap: 12px;
+      margin-top: 24px;
+    }
+    
+    /* 偏好标签 */
+    .preference-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 12px;
+    }
+    
+    .preference-tag {
+      padding: 6px 12px;
+      background-color: #f1f5f9;
+      border: 1px solid #cbd5e1;
+      border-radius: 20px;
+      font-size: 0.875rem;
+      color: #334155;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    
+    .preference-tag.selected {
+      background-color: #dbeafe;
+      border-color: #3b82f6;
+      color: #3b82f6;
+    }
+    
+    .preference-tag:hover {
+      background-color: #e2e8f0;
+    }
+    
+    /* 统计卡片 */
+    .stats-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    
+    .stats-card {
+      background-color: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 16px;
+      text-align: center;
+    }
+    
+    .stats-number {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #1e293b;
+      margin-bottom: 4px;
+    }
+    
+    .stats-label {
+      font-size: 0.875rem;
+      color: #64748b;
+    }
+    
+    /* 危险区域 */
+    .danger-zone {
+      background-color: #fef2f2;
+      border: 1px solid #fecaca;
+      border-radius: 8px;
+      padding: 20px;
+      margin-top: 32px;
+    }
+    
+    .danger-zone h3 {
+      color: #dc2626;
+      margin: 0 0 12px 0;
+    }
+    
+    .danger-zone p {
+      color: #7f1d1d;
+      margin: 0 0 16px 0;
+    }
+    
+    .btn-danger {
+      background-color: #dc2626;
+      color: white;
+    }
+    
+    .btn-danger:hover {
+      background-color: #b91c1c;
+    }
+    
+    /* 加载状态 */
+    .loading-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 40px;
+    }
+    
+    .loading-spinner {
+      border: 3px solid #f3f4f6;
+      border-top: 3px solid #3b82f6;
+      border-radius: 50%;
+      width: 24px;
+      height: 24px;
+      animation: spin 1s linear infinite;
+    }
+    
+    /* 响应式设计 */
+    @media (max-width: 1024px) {
+      .settings-container {
+        grid-template-columns: 1fr;
+      }
+      
+      .settings-sidebar {
+        position: static;
+      }
+    }
+    
+    @media (max-width: 768px) {
+      .sidebar {
+        transform: translateX(-100%);
+      }
+      
+      .sidebar.open {
+        transform: translateX(0);
+      }
+      
+      .main-content {
+        margin-left: 0;
+      }
+      
+      .form-row {
+        grid-template-columns: 1fr;
+      }
+      
+      .button-group {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="dashboard-container">
+    <!-- 侧边栏导航 -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <i class="fas fa-dumbbell"></i>
+        <h2>健身管理系统</h2>
+      </div>
+      
+      <ul class="nav-menu">
+        <li class="nav-item">
+          <a href="dashboard.html" class="nav-link">
+            <i class="fas fa-home"></i>
+            <span>首页</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="members.html" class="nav-link">
+            <i class="fas fa-users"></i>
+            <span>会员管理</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="equipment.html" class="nav-link">
+            <i class="fas fa-tools"></i>
+            <span>器材管理</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="trainers.html" class="nav-link">
+            <i class="fas fa-user-tie"></i>
+            <span>教练管理</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="classes.html" class="nav-link">
+            <i class="fas fa-calendar-alt"></i>
+            <span>课程管理</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="appointments.html" class="nav-link">
+            <i class="fas fa-clipboard-list"></i>
+            <span>预约管理</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="reports.html" class="nav-link">
+            <i class="fas fa-chart-bar"></i>
+            <span>数据报表</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="settings.html" class="nav-link active">
+            <i class="fas fa-cog"></i>
+            <span>系统设置</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="javascript:void(0)" id="logout-button" class="nav-link">
+            <i class="fas fa-sign-out-alt"></i>
+            <span>退出登录</span>
+          </a>
+        </li>
+      </ul>
+    </aside>
+    
+    <!-- 主内容区域 -->
+    <main class="main-content">
+      <!-- 顶部导航 -->
+      <nav class="top-nav">
+        <div class="top-nav-left">
+          <i class="fas fa-bars toggle-sidebar" id="toggle-sidebar"></i>
+        </div>
+        <div class="top-nav-right">
+          <div class="user-profile">
+            <div class="user-avatar" id="user-avatar">AD</div>
+            <div class="user-info">
+              <span class="user-name" id="user-name">管理员</span>
+              <span class="user-role">超级管理员</span>
+            </div>
+          </div>
+        </div>
+      </nav>
+      
+      <!-- 内容包装器 -->
+      <div class="content-wrapper">
+        <!-- 页面标题 -->
+        <div class="page-header">
+          <h1>系统设置</h1>
+          <p>管理个人资料、偏好设置和账户安全</p>
+        </div>
+        
+        <!-- 设置容器 -->
+        <div class="settings-container">
+          <!-- 设置侧边栏 -->
+          <div class="settings-sidebar">
+            <ul class="settings-nav">
+              <li class="settings-nav-item">
+                <a href="#profile" class="settings-nav-link active" data-section="profile">
+                  <i class="fas fa-user"></i>
+                  <span>个人资料</span>
+                </a>
+              </li>
+              <li class="settings-nav-item">
+                <a href="#preferences" class="settings-nav-link" data-section="preferences">
+                  <i class="fas fa-heart"></i>
+                  <span>运动偏好</span>
+                </a>
+              </li>
+              <li class="settings-nav-item">
+                <a href="#security" class="settings-nav-link" data-section="security">
+                  <i class="fas fa-shield-alt"></i>
+                  <span>账户安全</span>
+                </a>
+              </li>
+              <li class="settings-nav-item">
+                <a href="#notifications" class="settings-nav-link" data-section="notifications">
+                  <i class="fas fa-bell"></i>
+                  <span>通知设置</span>
+                </a>
+              </li>
+              <li class="settings-nav-item">
+                <a href="#system" class="settings-nav-link" data-section="system">
+                  <i class="fas fa-cogs"></i>
+                  <span>系统设置</span>
+                </a>
+              </li>
+            </ul>
+          </div>
+          
+          <!-- 设置面板 -->
+          <div class="settings-panel">
+            <!-- 个人资料 -->
+            <div class="settings-section active" id="profile-section">
+              <div class="section-header">
+                <h2 class="section-title">个人资料</h2>
+                <p class="section-description">管理您的账户信息和联系方式</p>
+              </div>
+              
+              <form id="profile-form">
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="username" class="form-label">用户名</label>
+                    <input type="text" id="username" name="username" class="form-input" readonly>
+                    <small class="setting-description">用户名不可修改</small>
+                  </div>
+                  
+                  <div class="form-group">
+                    <label for="email" class="form-label">邮箱地址</label>
+                    <input type="email" id="email" name="email" class="form-input" placeholder="请输入邮箱地址">
+                    <div id="email-error" class="error-message"></div>
+                  </div>
+                </div>
+                
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="phone" class="form-label">手机号码</label>
+                    <input type="tel" id="phone" name="phone" class="form-input" placeholder="请输入手机号码">
+                    <div id="phone-error" class="error-message"></div>
+                  </div>
+                  
+                  <div class="form-group">
+                    <label for="join-date" class="form-label">注册时间</label>
+                    <input type="text" id="join-date" name="joinDate" class="form-input" readonly>
+                  </div>
+                </div>
+                
+                <div class="button-group">
+                  <button type="submit" class="btn btn-primary" id="save-profile-btn">保存更改</button>
+                  <button type="button" class="btn btn-outline" id="cancel-profile-btn">取消</button>
+                </div>
+              </form>
+            </div>
+            
+            <!-- 运动偏好 -->
+            <div class="settings-section" id="preferences-section">
+              <div class="section-header">
+                <h2 class="section-title">运动偏好</h2>
+                <p class="section-description">设置您的运动偏好和健身目标</p>
+              </div>
+              
+              <!-- 偏好统计 -->
+              <div id="preferences-loading" class="loading-container" style="display: none;">
+                <div class="loading-spinner"></div>
+                <span style="margin-left: 12px;">加载偏好数据...</span>
+              </div>
+              
+              <div id="preferences-content">
+                <form id="preferences-form">
+                  <div class="setting-item">
+                    <label class="setting-label">喜欢的设施类型</label>
+                    <p class="setting-description">选择您偏好的健身器材类型</p>
+                    <div class="preference-tags" id="facility-types">
+                      <div class="preference-tag" data-type="有氧器材">有氧器材</div>
+                      <div class="preference-tag" data-type="力量器材">力量器材</div>
+                      <div class="preference-tag" data-type="功能性器材">功能性器材</div>
+                      <div class="preference-tag" data-type="柔韧性器材">柔韧性器材</div>
+                    </div>
+                  </div>
+                  
+                  <div class="setting-item">
+                    <label class="setting-label">运动频率</label>
+                    <p class="setting-description">您计划多久来健身房一次</p>
+                    <select id="frequency" name="frequency" class="form-input setting-control">
+                      <option value="">请选择运动频率</option>
+                      <option value="每天">每天</option>
+                      <option value="每周5次">每周5次</option>
+                      <option value="每周3次">每周3次</option>
+                      <option value="每周2次">每周2次</option>
+                      <option value="每周1次">每周1次</option>
+                    </select>
+                  </div>
+                  
+                  <div class="button-group">
+                    <button type="submit" class="btn btn-primary" id="save-preferences-btn">保存偏好</button>
+                    <button type="button" class="btn btn-outline" id="view-analysis-btn">查看分析</button>
+                  </div>
+                </form>
+                
+                <!-- 偏好分析 -->
+                <div id="preferences-analysis" style="display: none; margin-top: 32px;">
+                  <h3>偏好分析报告</h3>
+                  <div id="analysis-content">
+                    <!-- 分析内容将在这里渲染 -->
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- 账户安全 -->
+            <div class="settings-section" id="security-section">
+              <div class="section-header">
+                <h2 class="section-title">账户安全</h2>
+                <p class="section-description">管理您的密码和安全设置</p>
+              </div>
+              
+              <form id="password-form">
+                <div class="setting-item">
+                  <label for="old-password" class="setting-label">当前密码</label>
+                  <input type="password" id="old-password" name="old_pwd" class="form-input setting-control" placeholder="请输入当前密码">
+                  <div id="old-password-error" class="error-message"></div>
+                </div>
+                
+                <div class="setting-item">
+                  <label for="new-password" class="setting-label">新密码</label>
+                  <input type="password" id="new-password" name="new_pwd" class="form-input setting-control" placeholder="请输入新密码">
+                  <div id="new-password-error" class="error-message"></div>
+                </div>
+                
+                <div class="setting-item">
+                  <label for="confirm-password" class="setting-label">确认新密码</label>
+                  <input type="password" id="confirm-password" name="re_pwd" class="form-input setting-control" placeholder="请再次输入新密码">
+                  <div id="confirm-password-error" class="error-message"></div>
+                </div>
+                
+                <div class="button-group">
+                  <button type="submit" class="btn btn-primary" id="change-password-btn">修改密码</button>
+                  <button type="button" class="btn btn-outline" id="cancel-password-btn">取消</button>
+                </div>
+              </form>
+            </div>
+            
+            <!-- 通知设置 -->
+            <div class="settings-section" id="notifications-section">
+              <div class="section-header">
+                <h2 class="section-title">通知设置</h2>
+                <p class="section-description">管理您接收通知的方式和频率</p>
+              </div>
+              
+              <div class="setting-item">
+                <label class="setting-label">课程提醒</label>
+                <p class="setting-description">在课程开始前提醒您</p>
+                <label class="switch">
+                  <input type="checkbox" id="class-reminder" checked>
+                  <span class="slider"></span>
+                </label>
+              </div>
+              
+              <div class="setting-item">
+                <label class="setting-label">预约确认</label>
+                <p class="setting-description">当预约状态变更时通知您</p>
+                <label class="switch">
+                  <input type="checkbox" id="booking-confirmation" checked>
+                  <span class="slider"></span>
+                </label>
+              </div>
+              
+              <div class="setting-item">
+                <label class="setting-label">系统公告</label>
+                <p class="setting-description">接收健身房重要公告和活动信息</p>
+                <label class="switch">
+                  <input type="checkbox" id="system-announcements" checked>
+                  <span class="slider"></span>
+                </label>
+              </div>
+              
+              <div class="setting-item">
+                <label class="setting-label">推荐课程</label>
+                <p class="setting-description">根据您的偏好推荐合适的课程</p>
+                <label class="switch">
+                  <input type="checkbox" id="course-recommendations" checked>
+                  <span class="slider"></span>
+                </label>
+              </div>
+              
+              <div class="button-group">
+                <button type="button" class="btn btn-primary" id="save-notifications-btn">保存设置</button>
+              </div>
+            </div>
+            
+            <!-- 系统设置 -->
+            <div class="settings-section" id="system-section">
+              <div class="section-header">
+                <h2 class="section-title">系统设置</h2>
+                <p class="section-description">系统相关配置和数据管理</p>
+              </div>
+              
+              <div class="setting-item">
+                <label class="setting-label">语言设置</label>
+                <p class="setting-description">选择系统显示语言</p>
+                <select id="language" class="form-input setting-control">
+                  <option value="zh-CN" selected>简体中文</option>
+                  <option value="en-US">English</option>
+                </select>
+              </div>
+              
+              <div class="setting-item">
+                <label class="setting-label">主题设置</label>
+                <p class="setting-description">选择系统主题外观</p>
+                <select id="theme" class="form-input setting-control">
+                  <option value="light" selected>浅色主题</option>
+                  <option value="dark">深色主题</option>
+                  <option value="auto">自动切换</option>
+                </select>
+              </div>
+              
+              <div class="setting-item">
+                <label class="setting-label">数据导出</label>
+                <p class="setting-description">导出您的个人数据和活动记录</p>
+                <div class="button-group">
+                  <button type="button" class="btn btn-outline" id="export-data-btn">
+                    <i class="fas fa-download mr-2"></i>导出数据
+                  </button>
+                </div>
+              </div>
+              
+              <!-- 危险区域 -->
+              <div class="danger-zone">
+                <h3><i class="fas fa-exclamation-triangle mr-2"></i>危险操作</h3>
+                <p>以下操作不可逆转，请谨慎操作。</p>
+                <div class="button-group">
+                  <button type="button" class="btn btn-danger" id="clear-data-btn">
+                    <i class="fas fa-trash mr-2"></i>清除所有数据
+                  </button>
+                  <button type="button" class="btn btn-danger" id="delete-account-btn">
+                    <i class="fas fa-user-times mr-2"></i>删除账户
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="js/app.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // 检查登录状态
+      if (!Auth.isLoggedIn()) {
+        window.location.href = 'login.html';
+        return;
+      }
+      
+      // 页面元素
+      const settingsNavLinks = DOM.getAll('.settings-nav-link');
+      const settingsSections = DOM.getAll('.settings-section');
+      
+      // 表单元素
+      const profileForm = DOM.get('#profile-form');
+      const preferencesForm = DOM.get('#preferences-form');
+      const passwordForm = DOM.get('#password-form');
+      
+      // 用户信息
+      const userInfo = Auth.getUserInfo();
+      if (userInfo && userInfo.username) {
+        DOM.text(DOM.get('#user-name'), userInfo.username);
+        const initial = userInfo.username.charAt(0).toUpperCase();
+        DOM.text(DOM.get('#user-avatar'), initial);
+      }
+      
+      // 数据状态
+      let currentPreferences = null;
+      let selectedFacilityTypes = [];
+      
+      // 初始化页面
+      init();
+      
+      async function init() {
+        await loadUserProfile();
+        await loadUserPreferences();
+        bindEvents();
+      }
+      
+      function bindEvents() {
+        // 侧边栏切换
+        DOM.on(DOM.get('#toggle-sidebar'), 'click', function() {
+          DOM.toggleClass(DOM.get('#sidebar'), 'open');
+        });
+        
+        // 退出登录
+        DOM.on(DOM.get('#logout-button'), 'click', function() {
+          if (confirm('确定要退出登录吗？')) {
+            Auth.logout();
+          }
+        });
+        
+        // 设置导航
+        DOM.on(settingsNavLinks, 'click', function(e) {
+          e.preventDefault();
+          const sectionId = this.dataset.section;
+          switchSection(sectionId);
+        });
+        
+        // 设施类型选择
+        DOM.on(DOM.getAll('#facility-types .preference-tag'), 'click', function() {
+          const type = this.dataset.type;
+          DOM.toggleClass(this, 'selected');
+          
+          if (DOM.hasClass(this, 'selected')) {
+            if (!selectedFacilityTypes.includes(type)) {
+              selectedFacilityTypes.push(type);
+            }
+          } else {
+            selectedFacilityTypes = selectedFacilityTypes.filter(t => t !== type);
+          }
+        });
+        
+        // 表单提交
+        DOM.on(profileForm, 'submit', function(e) {
+          e.preventDefault();
+          handleProfileSubmit();
+        });
+        
+        DOM.on(preferencesForm, 'submit', function(e) {
+          e.preventDefault();
+          handlePreferencesSubmit();
+        });
+        
+        DOM.on(passwordForm, 'submit', function(e) {
+          e.preventDefault();
+          handlePasswordSubmit();
+        });
+        
+        // 其他按钮事件
+        DOM.on(DOM.get('#cancel-profile-btn'), 'click', function() {
+          loadUserProfile();
+        });
+        
+        DOM.on(DOM.get('#cancel-password-btn'), 'click', function() {
+          passwordForm.reset();
+          clearPasswordErrors();
+        });
+        
+        DOM.on(DOM.get('#view-analysis-btn'), 'click', function() {
+          togglePreferencesAnalysis();
+        });
+        
+        DOM.on(DOM.get('#save-notifications-btn'), 'click', function() {
+          saveNotificationSettings();
+        });
+        
+        DOM.on(DOM.get('#export-data-btn'), 'click', function() {
+          exportUserData();
+        });
+        
+        DOM.on(DOM.get('#clear-data-btn'), 'click', function() {
+          if (confirm('确定要清除所有数据吗？此操作不可恢复！')) {
+            clearAllData();
+          }
+        });
+        
+        DOM.on(DOM.get('#delete-account-btn'), 'click', function() {
+          if (confirm('确定要删除账户吗？此操作不可恢复！')) {
+            deleteAccount();
+          }
+        });
+      }
+      
+      // 切换设置面板
+      function switchSection(sectionId) {
+        // 更新导航状态
+        settingsNavLinks.forEach(link => {
+          DOM.removeClass(link, 'active');
+          if (link.dataset.section === sectionId) {
+            DOM.addClass(link, 'active');
+          }
+        });
+        
+        // 更新面板显示
+        settingsSections.forEach(section => {
+          DOM.removeClass(section, 'active');
+          if (section.id === `${sectionId}-section`) {
+            DOM.addClass(section, 'active');
+          }
+        });
+      }
+      
+      // 加载用户资料
+      async function loadUserProfile() {
+        try {
+          const response = await API.get('/users/userInfo');
+          
+          if (response.code === 200) {
+            const data = response.data;
+            
+            DOM.get('#username').value = data.username || '';
+            DOM.get('#email').value = data.email || '';
+            DOM.get('#phone').value = data.phone || '';
+            DOM.get('#join-date').value = Utils.formatDate(data.created_at, 'YYYY-MM-DD') || '';
+          } else {
+            Toast.error(response.msg || '获取用户信息失败');
+          }
+        } catch (error) {
+          console.error('Load user profile error:', error);
+          Toast.error('获取用户信息失败，请稍后重试');
+        }
+      }
+      
+      // 加载用户偏好
+      async function loadUserPreferences() {
+        try {
+          DOM.get('#preferences-loading').style.display = 'flex';
+          
+          const response = await API.get('/user-preferences');
+          
+          if (response.code === 200) {
+            currentPreferences = response.data;
+            
+            if (currentPreferences) {
+              // 设置设施类型偏好
+              if (currentPreferences.facility_type) {
+                selectedFacilityTypes = [currentPreferences.facility_type];
+                DOM.getAll('#facility-types .preference-tag').forEach(tag => {
+                  if (tag.dataset.type === currentPreferences.facility_type) {
+                    DOM.addClass(tag, 'selected');
+                  }
+                });
+              }
+              
+              // 设置运动频率
+              if (currentPreferences.frequency) {
+                DOM.get('#frequency').value = currentPreferences.frequency;
+              }
+            }
+          } else {
+            console.log('No user preferences found');
+          }
+        } catch (error) {
+          console.error('Load user preferences error:', error);
+        } finally {
+          DOM.get('#preferences-loading').style.display = 'none';
+        }
+      }
+      
+      // 处理个人资料提交
+      async function handleProfileSubmit() {
+        if (!validateProfileForm()) {
+          return;
+        }
+        
+        const formData = {
+          email: DOM.get('#email').value.trim(),
+          phone: DOM.get('#phone').value.trim()
+        };
+        
+        try {
+          DOM.disableButton(DOM.get('#save-profile-btn'), '<i class="fas fa-spinner fa-spin mr-2"></i>保存中...');
+          
+          const response = await API.put('/users/update', formData, true, 'application/json');
+          
+          if (response.code === 200) {
+            Toast.success(response.msg || '个人资料更新成功');
+          } else {
+            Toast.error(response.msg || '更新失败');
+          }
+        } catch (error) {
+          console.error('Update profile error:', error);
+          Toast.error('更新失败，请稍后重试');
+        } finally {
+          DOM.enableButton(DOM.get('#save-profile-btn'));
+        }
+      }
+      
+      // 处理偏好设置提交
+      async function handlePreferencesSubmit() {
+        if (!validatePreferencesForm()) {
+          return;
+        }
+        
+        const formData = {
+          facility_type: selectedFacilityTypes[0] || '',
+          frequency: DOM.get('#frequency').value
+        };
+        
+        try {
+          DOM.disableButton(DOM.get('#save-preferences-btn'), '<i class="fas fa-spinner fa-spin mr-2"></i>保存中...');
+          
+          const response = await API.put('/user-preferences', formData, true, 'application/json');
+          
+          if (response.code === 200) {
+            Toast.success(response.msg || '偏好设置保存成功');
+            currentPreferences = { ...currentPreferences, ...formData };
+          } else {
+            Toast.error(response.msg || '保存失败');
+          }
+        } catch (error) {
+          console.error('Update preferences error:', error);
+          Toast.error('保存失败，请稍后重试');
+        } finally {
+          DOM.enableButton(DOM.get('#save-preferences-btn'));
+        }
+      }
+      
+      // 处理密码修改提交
+      async function handlePasswordSubmit() {
+        if (!validatePasswordForm()) {
+          return;
+        }
+        
+        const formData = {
+          old_pwd: DOM.get('#old-password').value,
+          new_pwd: DOM.get('#new-password').value,
+          re_pwd: DOM.get('#confirm-password').value
+        };
+        
+        try {
+          DOM.disableButton(DOM.get('#change-password-btn'), '<i class="fas fa-spinner fa-spin mr-2"></i>修改中...');
+          
+          const response = await API.patch('/users/updatePwd', formData, true, 'application/json');
+          
+          if (response.code === 200) {
+            Toast.success(response.msg || '密码修改成功');
+            passwordForm.reset();
+            clearPasswordErrors();
+          } else {
+            Toast.error(response.msg || '密码修改失败');
+          }
+        } catch (error) {
+          console.error('Update password error:', error);
+          Toast.error('密码修改失败，请稍后重试');
+        } finally {
+          DOM.enableButton(DOM.get('#change-password-btn'));
+        }
+      }
+      
+      // 切换偏好分析显示
+      async function togglePreferencesAnalysis() {
+        const analysisDiv = DOM.get('#preferences-analysis');
+        
+        if (analysisDiv.style.display === 'none') {
+          await loadPreferencesAnalysis();
+          analysisDiv.style.display = 'block';
+          DOM.text(DOM.get('#view-analysis-btn'), '隐藏分析');
+        } else {
+          analysisDiv.style.display = 'none';
+          DOM.text(DOM.get('#view-analysis-btn'), '查看分析');
+        }
+      }
+      
+      // 加载偏好分析
+      async function loadPreferencesAnalysis() {
+        try {
+          const response = await API.get('/user-preferences/analysis');
+          
+          if (response.code === 200) {
+            const data = response.data;
+            renderPreferencesAnalysis(data);
+          } else {
+            DOM.get('#analysis-content').innerHTML = '<p style="color: #9ca3af;">暂无分析数据</p>';
+          }
+        } catch (error) {
+          console.error('Load preferences analysis error:', error);
+          // 使用模拟数据
+          renderPreferencesAnalysis({
+            user_id: 1,
+            preferred_facility_types: ['有氧器材', '力量器材'],
+            visit_pattern: {
+              weekdays: ['周一', '周三', '周五'],
+              average_duration: '60分钟'
+            },
+            suggested_courses: [
+              { course_id: 1, course_name: 'HIIT训练' },
+              { course_id: 2, course_name: '力量训练基础' }
+            ]
+          });
+        }
+      }
+      
+      // 渲染偏好分析
+      function renderPreferencesAnalysis(data) {
+        const analysisContent = DOM.get('#analysis-content');
+        
+        analysisContent.innerHTML = `
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+            <div style="background-color: #f8fafc; border-radius: 8px; padding: 16px;">
+              <h4>偏好器材类型</h4>
+              <ul>
+                ${data.preferred_facility_types?.map(type => `<li>${type}</li>`).join('') || '<li>暂无数据</li>'}
+              </ul>
+            </div>
+            
+            <div style="background-color: #f8fafc; border-radius: 8px; padding: 16px;">
+              <h4>运动模式</h4>
+              <p><strong>常去时间：</strong>${data.visit_pattern?.weekdays?.join(', ') || '暂无数据'}</p>
+              <p><strong>平均时长：</strong>${data.visit_pattern?.average_duration || '暂无数据'}</p>
+            </div>
+          </div>
+          
+          <div style="margin-top: 16px; background-color: #f8fafc; border-radius: 8px; padding: 16px;">
+            <h4>推荐课程</h4>
+            <ul>
+              ${data.suggested_courses?.map(course => 
+                `<li><a href="classes.html" style="color: #3b82f6;">${course.course_name}</a></li>`
+              ).join('') || '<li>暂无推荐</li>'}
+            </ul>
+          </div>
+        `;
+      }
+      
+      // 保存通知设置
+      function saveNotificationSettings() {
+        const settings = {
+          classReminder: DOM.get('#class-reminder').checked,
+          bookingConfirmation: DOM.get('#booking-confirmation').checked,
+          systemAnnouncements: DOM.get('#system-announcements').checked,
+          courseRecommendations: DOM.get('#course-recommendations').checked
+        };
+        
+        // 保存到本地存储
+        Storage.set('notification_settings', settings);
+        Toast.success('通知设置保存成功');
+      }
+      
+      // 导出用户数据
+      function exportUserData() {
+        Toast.info('数据导出功能开发中...');
+        // 这里可以实现实际的数据导出功能
+      }
+      
+      // 清除所有数据
+      function clearAllData() {
+        Toast.info('数据清除功能开发中...');
+        // 这里可以实现清除用户数据的功能
+      }
+      
+      // 删除账户
+      function deleteAccount() {
+        Toast.info('账户删除功能开发中...');
+        // 这里可以实现账户删除功能
+      }
+      
+      // 验证个人资料表单
+      function validateProfileForm() {
+        clearProfileErrors();
+        let isValid = true;
+        
+        const email = DOM.get('#email').value.trim();
+        const phone = DOM.get('#phone').value.trim();
+        
+        // 验证邮箱
+        if (email) {
+          const emailValidation = Validation.email(email);
+          if (!emailValidation.valid) {
+            showFieldError('email-error', emailValidation.message);
+            isValid = false;
+          }
+        }
+        
+        // 验证手机号
+        if (phone) {
+          const phoneValidation = Validation.phone(phone);
+          if (!phoneValidation.valid) {
+            showFieldError('phone-error', phoneValidation.message);
+            isValid = false;
+          }
+        }
+        
+        return isValid;
+      }
+      
+      // 验证偏好设置表单
+      function validatePreferencesForm() {
+        if (selectedFacilityTypes.length === 0) {
+          Toast.error('请至少选择一种设施类型偏好');
+          return false;
+        }
+        
+        if (!DOM.get('#frequency').value) {
+          Toast.error('请选择运动频率');
+          return false;
+        }
+        
+        return true;
+      }
+      
+      // 验证密码表单
+      function validatePasswordForm() {
+        clearPasswordErrors();
+        let isValid = true;
+        
+        const oldPassword = DOM.get('#old-password').value;
+        const newPassword = DOM.get('#new-password').value;
+        const confirmPassword = DOM.get('#confirm-password').value;
+        
+        // 验证当前密码
+        if (!oldPassword) {
+          showFieldError('old-password-error', '请输入当前密码');
+          isValid = false;
+        }
+        
+        // 验证新密码
+        if (!newPassword) {
+          showFieldError('new-password-error', '请输入新密码');
+          isValid = false;
+        } else {
+          const passwordValidation = Validation.password(newPassword);
+          if (!passwordValidation.valid) {
+            showFieldError('new-password-error', passwordValidation.message);
+            isValid = false;
+          }
+        }
+        
+        // 验证确认密码
+        if (!confirmPassword) {
+          showFieldError('confirm-password-error', '请确认新密码');
+          isValid = false;
+        } else if (newPassword !== confirmPassword) {
+          showFieldError('confirm-password-error', '两次输入的密码不一致');
+          isValid = false;
+        }
+        
+        return isValid;
+      }
+      
+      // 显示字段错误
+      function showFieldError(errorId, message) {
+        const errorElement = DOM.get(`#${errorId}`);
+        if (errorElement) {
+          errorElement.textContent = message;
+        }
+      }
+      
+      // 清除个人资料错误
+      function clearProfileErrors() {
+        const errorElements = profileForm.querySelectorAll('.error-message');
+        errorElements.forEach(element => {
+          element.textContent = '';
+        });
+      }
+      
+      // 清除密码错误
+      function clearPasswordErrors() {
+        const errorElements = passwordForm.querySelectorAll('.error-message');
+        errorElements.forEach(element => {
+          element.textContent = '';
+        });
+      }
+    });
+  </script>
+</body>
+</html>

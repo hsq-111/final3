@@ -1,0 +1,1388 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>课程管理 - 健身管理系统</title>
+  <link rel="stylesheet" href="css/style.css">
+  <!-- 引入Font Awesome图标库 -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    /* 继承仪表盘布局样式 */
+    .dashboard-container {
+      display: flex;
+      min-height: 100vh;
+    }
+    
+    /* 侧边栏导航 */
+    .sidebar {
+      width: 240px;
+      background-color: #1e293b;
+      color: white;
+      position: fixed;
+      height: 100vh;
+      overflow-y: auto;
+      transition: width 0.3s ease;
+      z-index: 100;
+    }
+    
+    .sidebar-header {
+      padding: 20px;
+      border-bottom: 1px solid #334155;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    
+    .sidebar-header i {
+      font-size: 1.5rem;
+      color: #3b82f6;
+    }
+    
+    .sidebar-header h2 {
+      margin: 0;
+      font-size: 1.25rem;
+      font-weight: 600;
+    }
+    
+    .nav-menu {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    
+    .nav-item {
+      position: relative;
+    }
+    
+    .nav-link {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 16px 20px;
+      color: #cbd5e1;
+      text-decoration: none;
+      transition: all 0.2s ease;
+    }
+    
+    .nav-link:hover {
+      background-color: #334155;
+      color: white;
+    }
+    
+    .nav-link.active {
+      background-color: #3b82f6;
+      color: white;
+    }
+    
+    .nav-link i {
+      font-size: 1.125rem;
+      width: 24px;
+      text-align: center;
+    }
+    
+    /* 主内容区域 */
+    .main-content {
+      flex: 1;
+      margin-left: 240px;
+      transition: margin-left 0.3s ease;
+    }
+    
+    /* 顶部导航 */
+    .top-nav {
+      background-color: white;
+      padding: 16px 24px;
+      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+    
+    .top-nav-left {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    
+    .toggle-sidebar {
+      font-size: 1.25rem;
+      cursor: pointer;
+      color: #334155;
+    }
+    
+    .top-nav-right {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    
+    .user-profile {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+    }
+    
+    .user-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background-color: #3b82f6;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: 600;
+    }
+    
+    .user-info {
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .user-name {
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: #1e293b;
+    }
+    
+    .user-role {
+      font-size: 0.75rem;
+      color: #64748b;
+    }
+    
+    /* 内容包装器 */
+    .content-wrapper {
+      padding: 24px;
+    }
+    
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 24px;
+    }
+    
+    .page-header h1 {
+      margin: 0;
+      font-size: 1.875rem;
+      color: #1e293b;
+    }
+    
+    .page-header p {
+      color: #64748b;
+      margin-top: 4px;
+    }
+    
+    /* 工具栏 */
+    .toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      gap: 16px;
+    }
+    
+    .toolbar-left {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+    }
+    
+    .search-box {
+      position: relative;
+      width: 300px;
+    }
+    
+    .search-input {
+      width: 100%;
+      padding: 10px 16px 10px 40px;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      font-size: 0.875rem;
+    }
+    
+    .search-icon {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #64748b;
+    }
+    
+    .filter-select {
+      padding: 10px 16px;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      font-size: 0.875rem;
+      background-color: white;
+    }
+    
+    .toolbar-actions {
+      display: flex;
+      gap: 12px;
+    }
+    
+    /* 课程卡片网格 */
+    .classes-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+      gap: 24px;
+      margin-bottom: 24px;
+    }
+    
+    .class-card {
+      background-color: white;
+      border-radius: 12px;
+      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    
+    .class-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    }
+    
+    .class-card-header {
+      padding: 20px;
+      background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+      color: white;
+    }
+    
+    .class-title {
+      margin: 0 0 8px 0;
+      font-size: 1.25rem;
+      font-weight: 600;
+    }
+    
+    .class-type {
+      display: inline-block;
+      padding: 4px 12px;
+      background-color: rgba(255, 255, 255, 0.2);
+      border-radius: 16px;
+      font-size: 0.75rem;
+      font-weight: 500;
+    }
+    
+    .class-card-body {
+      padding: 20px;
+    }
+    
+    .class-info {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    
+    .class-info-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 0.875rem;
+      color: #4b5563;
+    }
+    
+    .class-info-item i {
+      width: 16px;
+      color: #6b7280;
+    }
+    
+    .class-status {
+      display: inline-flex;
+      align-items: center;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 500;
+    }
+    
+    .status-active {
+      background-color: #d1fae5;
+      color: #065f46;
+    }
+    
+    .status-cancelled {
+      background-color: #fee2e2;
+      color: #991b1b;
+    }
+    
+    .class-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 16px;
+    }
+    
+    .btn-sm {
+      padding: 6px 12px;
+      font-size: 0.75rem;
+    }
+    
+    .btn-view {
+      background-color: #6b7280;
+      color: white;
+    }
+    
+    .btn-view:hover {
+      background-color: #4b5563;
+    }
+    
+    .btn-edit {
+      background-color: #3b82f6;
+      color: white;
+    }
+    
+    .btn-edit:hover {
+      background-color: #2563eb;
+    }
+    
+    .btn-delete {
+      background-color: #ef4444;
+      color: white;
+    }
+    
+    .btn-delete:hover {
+      background-color: #dc2626;
+    }
+    
+    /* 模态框 */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+    }
+    
+    .modal.show {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .modal-content {
+      background-color: white;
+      border-radius: 12px;
+      padding: 24px;
+      width: 90%;
+      max-width: 600px;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    
+    .modal-title {
+      margin: 0;
+      font-size: 1.25rem;
+      color: #1e293b;
+    }
+    
+    .modal-close {
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      cursor: pointer;
+      color: #64748b;
+    }
+    
+    .modal-close:hover {
+      color: #374151;
+    }
+    
+    .modal-footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+      margin-top: 20px;
+    }
+    
+    /* 表单布局 */
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+    
+    /* 加载状态 */
+    .loading-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 40px;
+    }
+    
+    .loading-spinner {
+      border: 3px solid #f3f4f6;
+      border-top: 3px solid #3b82f6;
+      border-radius: 50%;
+      width: 24px;
+      height: 24px;
+      animation: spin 1s linear infinite;
+    }
+    
+    /* 空状态 */
+    .empty-state {
+      text-align: center;
+      padding: 40px 20px;
+      color: #64748b;
+    }
+    
+    .empty-state i {
+      font-size: 3rem;
+      margin-bottom: 16px;
+      color: #cbd5e1;
+    }
+    
+    /* 分页 */
+    .pagination {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 24px;
+    }
+    
+    .pagination button {
+      padding: 8px 12px;
+      border: 1px solid #cbd5e1;
+      background-color: white;
+      color: #374151;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    
+    .pagination button:hover {
+      background-color: #f3f4f6;
+    }
+    
+    .pagination button.active {
+      background-color: #3b82f6;
+      color: white;
+      border-color: #3b82f6;
+    }
+    
+    .pagination button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    
+    /* 响应式设计 */
+    @media (max-width: 768px) {
+      .sidebar {
+        transform: translateX(-100%);
+      }
+      
+      .sidebar.open {
+        transform: translateX(0);
+      }
+      
+      .main-content {
+        margin-left: 0;
+      }
+      
+      .toolbar {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      
+      .toolbar-left {
+        flex-direction: column;
+      }
+      
+      .search-box {
+        width: 100%;
+      }
+      
+      .classes-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .form-row {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="dashboard-container">
+    <!-- 侧边栏导航 -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <i class="fas fa-dumbbell"></i>
+        <h2>健身管理系统</h2>
+      </div>
+      
+      <ul class="nav-menu">
+        <li class="nav-item">
+          <a href="dashboard.html" class="nav-link">
+            <i class="fas fa-home"></i>
+            <span>首页</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="members.html" class="nav-link">
+            <i class="fas fa-users"></i>
+            <span>会员管理</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="equipment.html" class="nav-link">
+            <i class="fas fa-tools"></i>
+            <span>器材管理</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="trainers.html" class="nav-link">
+            <i class="fas fa-user-tie"></i>
+            <span>教练管理</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="classes.html" class="nav-link active">
+            <i class="fas fa-calendar-alt"></i>
+            <span>课程管理</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="appointments.html" class="nav-link">
+            <i class="fas fa-clipboard-list"></i>
+            <span>预约管理</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="reports.html" class="nav-link">
+            <i class="fas fa-chart-bar"></i>
+            <span>数据报表</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="settings.html" class="nav-link">
+            <i class="fas fa-cog"></i>
+            <span>系统设置</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="javascript:void(0)" id="logout-button" class="nav-link">
+            <i class="fas fa-sign-out-alt"></i>
+            <span>退出登录</span>
+          </a>
+        </li>
+      </ul>
+    </aside>
+    
+    <!-- 主内容区域 -->
+    <main class="main-content">
+      <!-- 顶部导航 -->
+      <nav class="top-nav">
+        <div class="top-nav-left">
+          <i class="fas fa-bars toggle-sidebar" id="toggle-sidebar"></i>
+        </div>
+        <div class="top-nav-right">
+          <div class="user-profile">
+            <div class="user-avatar" id="user-avatar">AD</div>
+            <div class="user-info">
+              <span class="user-name" id="user-name">管理员</span>
+              <span class="user-role">超级管理员</span>
+            </div>
+          </div>
+        </div>
+      </nav>
+      
+      <!-- 内容包装器 -->
+      <div class="content-wrapper">
+        <!-- 页面标题 -->
+        <div class="page-header">
+          <div>
+            <h1>课程管理</h1>
+            <p>管理健身房所有课程安排</p>
+          </div>
+        </div>
+        
+        <!-- 工具栏 -->
+        <div class="toolbar">
+          <div class="toolbar-left">
+            <div class="search-box">
+              <i class="fas fa-search search-icon"></i>
+              <input type="text" class="search-input" placeholder="搜索课程名称或教练..." id="search-input">
+            </div>
+            <select class="filter-select" id="type-filter">
+              <option value="">所有类型</option>
+              <option value="瑜伽">瑜伽</option>
+              <option value="有氧运动">有氧运动</option>
+              <option value="力量训练">力量训练</option>
+              <option value="舞蹈">舞蹈</option>
+              <option value="游泳">游泳</option>
+            </select>
+            <select class="filter-select" id="status-filter">
+              <option value="">所有状态</option>
+              <option value="ACTIVE">进行中</option>
+              <option value="CANCELLED">已取消</option>
+            </select>
+          </div>
+          <div class="toolbar-actions">
+            <button class="btn btn-primary" id="add-class-btn">
+              <i class="fas fa-plus mr-2"></i>创建课程
+            </button>
+          </div>
+        </div>
+        
+        <!-- 课程列表 -->
+        <div id="loading-container" class="loading-container" style="display: none;">
+          <div class="loading-spinner"></div>
+          <span style="margin-left: 12px;">加载中...</span>
+        </div>
+        
+        <div class="classes-grid" id="classes-grid" style="display: none;">
+          <!-- 课程卡片将在这里渲染 -->
+        </div>
+        
+        <div id="empty-state" class="empty-state" style="display: none;">
+          <i class="fas fa-calendar-alt"></i>
+          <h3>暂无课程数据</h3>
+          <p>点击上方"创建课程"按钮开始添加课程</p>
+        </div>
+        
+        <!-- 分页 -->
+        <div class="pagination" id="pagination" style="display: none;">
+          <!-- 分页按钮将在这里渲染 -->
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- 添加/编辑课程模态框 -->
+  <div class="modal" id="class-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title" id="modal-title">创建课程</h3>
+        <button class="modal-close" id="modal-close">&times;</button>
+      </div>
+      
+      <form id="class-form">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="class-name" class="form-label">课程名称</label>
+            <input type="text" id="class-name" name="name" class="form-input" placeholder="请输入课程名称" required>
+            <div id="name-error" class="error-message"></div>
+          </div>
+          
+          <div class="form-group">
+            <label for="class-type" class="form-label">课程类型</label>
+            <select id="class-type" name="type" class="form-input" required>
+              <option value="">请选择课程类型</option>
+              <option value="瑜伽">瑜伽</option>
+              <option value="有氧运动">有氧运动</option>
+              <option value="力量训练">力量训练</option>
+              <option value="舞蹈">舞蹈</option>
+              <option value="游泳">游泳</option>
+            </select>
+            <div id="type-error" class="error-message"></div>
+          </div>
+        </div>
+        
+        <div class="form-row">
+          <div class="form-group">
+            <label for="class-instructor" class="form-label">教练</label>
+            <input type="text" id="class-instructor" name="instructor" class="form-input" placeholder="请输入教练姓名" required>
+            <div id="instructor-error" class="error-message"></div>
+          </div>
+          
+          <div class="form-group">
+            <label for="class-capacity" class="form-label">容量</label>
+            <input type="number" id="class-capacity" name="capacity" class="form-input" placeholder="请输入课程容量" min="1" required>
+            <div id="capacity-error" class="error-message"></div>
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label for="class-time" class="form-label">课程时间</label>
+          <input type="datetime-local" id="class-time" name="time" class="form-input" required>
+          <div id="time-error" class="error-message"></div>
+        </div>
+        
+        <div class="form-group">
+          <label for="class-location" class="form-label">上课地点</label>
+          <input type="text" id="class-location" name="location" class="form-input" placeholder="请输入上课地点" required>
+          <div id="location-error" class="error-message"></div>
+        </div>
+        
+        <div class="form-group">
+          <label for="class-status" class="form-label">状态</label>
+          <select id="class-status" name="status" class="form-input" required>
+            <option value="ACTIVE">进行中</option>
+            <option value="CANCELLED">已取消</option>
+          </select>
+          <div id="status-error" class="error-message"></div>
+        </div>
+        
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" id="cancel-btn">取消</button>
+          <button type="submit" class="btn btn-primary" id="submit-btn">保存</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 课程详情模态框 -->
+  <div class="modal" id="class-detail-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">课程详情</h3>
+        <button class="modal-close" id="detail-modal-close">&times;</button>
+      </div>
+      
+      <div id="class-detail-content">
+        <!-- 课程详情内容将在这里渲染 -->
+      </div>
+      
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline" id="close-detail-btn">关闭</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/app.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // 检查登录状态
+      if (!Auth.isLoggedIn()) {
+        window.location.href = 'login.html';
+        return;
+      }
+      
+      // 页面元素
+      const searchInput = DOM.get('#search-input');
+      const typeFilter = DOM.get('#type-filter');
+      const statusFilter = DOM.get('#status-filter');
+      const addClassBtn = DOM.get('#add-class-btn');
+      const classesGrid = DOM.get('#classes-grid');
+      const loadingContainer = DOM.get('#loading-container');
+      const emptyState = DOM.get('#empty-state');
+      const pagination = DOM.get('#pagination');
+      
+      // 模态框元素
+      const classModal = DOM.get('#class-modal');
+      const modalTitle = DOM.get('#modal-title');
+      const modalClose = DOM.get('#modal-close');
+      const classForm = DOM.get('#class-form');
+      const cancelBtn = DOM.get('#cancel-btn');
+      const submitBtn = DOM.get('#submit-btn');
+      
+      // 详情模态框
+      const classDetailModal = DOM.get('#class-detail-modal');
+      const detailModalClose = DOM.get('#detail-modal-close');
+      const closeDetailBtn = DOM.get('#close-detail-btn');
+      const classDetailContent = DOM.get('#class-detail-content');
+      
+      // 表单元素
+      const className = DOM.get('#class-name');
+      const classType = DOM.get('#class-type');
+      const classInstructor = DOM.get('#class-instructor');
+      const classCapacity = DOM.get('#class-capacity');
+      const classTime = DOM.get('#class-time');
+      const classLocation = DOM.get('#class-location');
+      const classStatus = DOM.get('#class-status');
+      
+      // 用户信息
+      const userInfo = Auth.getUserInfo();
+      if (userInfo && userInfo.username) {
+        DOM.text(DOM.get('#user-name'), userInfo.username);
+        const initial = userInfo.username.charAt(0).toUpperCase();
+        DOM.text(DOM.get('#user-avatar'), initial);
+      }
+      
+      // 数据状态
+      let currentEditingId = null;
+      let classesData = [];
+      let filteredData = [];
+      let currentPage = 1;
+      const pageSize = 12;
+      
+      // 初始化页面
+      init();
+      
+      async function init() {
+        await loadClassesData();
+        bindEvents();
+      }
+      
+      function bindEvents() {
+        // 侧边栏切换
+        DOM.on(DOM.get('#toggle-sidebar'), 'click', function() {
+          DOM.toggleClass(DOM.get('#sidebar'), 'open');
+        });
+        
+        // 退出登录
+        DOM.on(DOM.get('#logout-button'), 'click', function() {
+          if (confirm('确定要退出登录吗？')) {
+            Auth.logout();
+          }
+        });
+        
+        // 搜索功能
+        DOM.on(searchInput, 'input', Utils.debounce(function() {
+          filterClasses();
+        }, 300));
+        
+        // 筛选功能
+        DOM.on([typeFilter, statusFilter], 'change', function() {
+          filterClasses();
+        });
+        
+        // 添加课程
+        DOM.on(addClassBtn, 'click', function() {
+          openModal('add');
+        });
+        
+        // 模态框关闭
+        DOM.on([modalClose, cancelBtn], 'click', function() {
+          closeModal();
+        });
+        
+        DOM.on([detailModalClose, closeDetailBtn], 'click', function() {
+          closeDetailModal();
+        });
+        
+        // 模态框背景点击关闭
+        DOM.on(classModal, 'click', function(e) {
+          if (e.target === classModal) {
+            closeModal();
+          }
+        });
+        
+        DOM.on(classDetailModal, 'click', function(e) {
+          if (e.target === classDetailModal) {
+            closeDetailModal();
+          }
+        });
+        
+        // 表单提交
+        DOM.on(classForm, 'submit', function(e) {
+          e.preventDefault();
+          handleFormSubmit();
+        });
+      }
+      
+      // 加载课程数据
+      async function loadClassesData() {
+        try {
+          showLoading();
+          const response = await API.get('/fitness-classes');
+          
+          if (response.code === 200) {
+            classesData = response.data?.list || [];
+            filteredData = [...classesData];
+            renderClasses();
+          } else {
+            Toast.error(response.msg || '获取课程数据失败');
+            showEmptyState();
+          }
+        } catch (error) {
+          console.error('Load classes data error:', error);
+          Toast.error('获取课程数据失败，请稍后重试');
+          showEmptyState();
+        } finally {
+          hideLoading();
+        }
+      }
+      
+      // 过滤课程
+      function filterClasses() {
+        const searchTerm = searchInput.value.trim().toLowerCase();
+        const typeValue = typeFilter.value;
+        const statusValue = statusFilter.value;
+        
+        filteredData = classesData.filter(classItem => {
+          const matchSearch = !searchTerm || 
+            classItem.name.toLowerCase().includes(searchTerm) ||
+            classItem.instructor.toLowerCase().includes(searchTerm);
+          
+          const matchType = !typeValue || classItem.type === typeValue;
+          const matchStatus = !statusValue || classItem.status === statusValue;
+          
+          return matchSearch && matchType && matchStatus;
+        });
+        
+        currentPage = 1;
+        renderClasses();
+      }
+      
+      // 渲染课程列表
+      function renderClasses() {
+        if (!filteredData || filteredData.length === 0) {
+          showEmptyState();
+          return;
+        }
+        
+        // 分页计算
+        const totalPages = Math.ceil(filteredData.length / pageSize);
+        const startIndex = (currentPage - 1) * pageSize;
+        const endIndex = startIndex + pageSize;
+        const pageData = filteredData.slice(startIndex, endIndex);
+        
+        DOM.empty(classesGrid);
+        
+        pageData.forEach(classItem => {
+          const card = DOM.create('div', 'class-card');
+          card.innerHTML = `
+            <div class="class-card-header">
+              <h4 class="class-title">${classItem.name}</h4>
+              <span class="class-type">${classItem.type}</span>
+            </div>
+            <div class="class-card-body">
+              <div class="class-info">
+                <div class="class-info-item">
+                  <i class="fas fa-user-tie"></i>
+                  <span>教练：${classItem.instructor}</span>
+                </div>
+                <div class="class-info-item">
+                  <i class="fas fa-clock"></i>
+                  <span>时间：${Utils.formatDate(classItem.time, 'YYYY-MM-DD HH:mm')}</span>
+                </div>
+                <div class="class-info-item">
+                  <i class="fas fa-map-marker-alt"></i>
+                  <span>地点：${classItem.location}</span>
+                </div>
+                <div class="class-info-item">
+                  <i class="fas fa-users"></i>
+                  <span>容量：${classItem.capacity}人</span>
+                </div>
+                <div class="class-info-item">
+                  <i class="fas fa-info-circle"></i>
+                  <span class="class-status status-${classItem.status.toLowerCase()}">
+                    ${getStatusText(classItem.status)}
+                  </span>
+                </div>
+              </div>
+              <div class="class-actions">
+                <button class="btn btn-sm btn-view" onclick="viewClassDetail(${classItem.class_id})">
+                  <i class="fas fa-eye"></i> 详情
+                </button>
+                <button class="btn btn-sm btn-edit" onclick="editClass(${classItem.class_id})">
+                  <i class="fas fa-edit"></i> 编辑
+                </button>
+                <button class="btn btn-sm btn-delete" onclick="deleteClass(${classItem.class_id}, '${classItem.name}')">
+                  <i class="fas fa-trash"></i> 删除
+                </button>
+              </div>
+            </div>
+          `;
+          classesGrid.appendChild(card);
+        });
+        
+        showGrid();
+        renderPagination(totalPages);
+      }
+      
+      // 渲染分页
+      function renderPagination(totalPages) {
+        if (totalPages <= 1) {
+          pagination.style.display = 'none';
+          return;
+        }
+        
+        DOM.empty(pagination);
+        
+        // 上一页按钮
+        const prevBtn = DOM.create('button');
+        prevBtn.textContent = '上一页';
+        prevBtn.disabled = currentPage === 1;
+        DOM.on(prevBtn, 'click', function() {
+          if (currentPage > 1) {
+            currentPage--;
+            renderClasses();
+          }
+        });
+        pagination.appendChild(prevBtn);
+        
+        // 页码按钮
+        for (let i = 1; i <= totalPages; i++) {
+          const pageBtn = DOM.create('button');
+          pageBtn.textContent = i;
+          if (i === currentPage) {
+            DOM.addClass(pageBtn, 'active');
+          }
+          DOM.on(pageBtn, 'click', function() {
+            currentPage = i;
+            renderClasses();
+          });
+          pagination.appendChild(pageBtn);
+        }
+        
+        // 下一页按钮
+        const nextBtn = DOM.create('button');
+        nextBtn.textContent = '下一页';
+        nextBtn.disabled = currentPage === totalPages;
+        DOM.on(nextBtn, 'click', function() {
+          if (currentPage < totalPages) {
+            currentPage++;
+            renderClasses();
+          }
+        });
+        pagination.appendChild(nextBtn);
+        
+        pagination.style.display = 'flex';
+      }
+      
+      // 获取状态文本
+      function getStatusText(status) {
+        const statusMap = {
+          'ACTIVE': '进行中',
+          'CANCELLED': '已取消'
+        };
+        return statusMap[status] || status;
+      }
+      
+      // 打开模态框
+      function openModal(mode, classId = null) {
+        currentEditingId = classId;
+        
+        if (mode === 'add') {
+          DOM.text(modalTitle, '创建课程');
+          DOM.text(submitBtn, '创建课程');
+          classForm.reset();
+        } else if (mode === 'edit') {
+          DOM.text(modalTitle, '编辑课程');
+          DOM.text(submitBtn, '保存修改');
+          
+          // 填充表单数据
+          const classItem = classesData.find(item => item.class_id === classId);
+          if (classItem) {
+            className.value = classItem.name;
+            classType.value = classItem.type;
+            classInstructor.value = classItem.instructor;
+            classCapacity.value = classItem.capacity;
+            classLocation.value = classItem.location;
+            classStatus.value = classItem.status;
+            
+            // 格式化时间为 datetime-local 格式
+            const timeDate = new Date(classItem.time);
+            classTime.value = timeDate.toISOString().slice(0, 16);
+          }
+        }
+        
+        DOM.addClass(classModal, 'show');
+      }
+      
+      // 关闭模态框
+      function closeModal() {
+        DOM.removeClass(classModal, 'show');
+        currentEditingId = null;
+        classForm.reset();
+        clearFormErrors();
+      }
+      
+      // 关闭详情模态框
+      function closeDetailModal() {
+        DOM.removeClass(classDetailModal, 'show');
+      }
+      
+      // 处理表单提交
+      async function handleFormSubmit() {
+        if (!validateForm()) {
+          return;
+        }
+        
+        const formData = {
+          name: className.value.trim(),
+          type: classType.value,
+          instructor: classInstructor.value.trim(),
+          capacity: parseInt(classCapacity.value),
+          time: new Date(classTime.value).toISOString().replace('T', ' ').slice(0, 19),
+          location: classLocation.value.trim(),
+          status: classStatus.value
+        };
+        
+        try {
+          DOM.disableButton(submitBtn, '<i class="fas fa-spinner fa-spin mr-2"></i>保存中...');
+          
+          let response;
+          if (currentEditingId) {
+            // 编辑课程
+            response = await API.put(`/fitness-classes/${currentEditingId}`, formData, true, 'application/json');
+          } else {
+            // 创建课程
+            response = await API.post('/fitness-classes', formData, true, 'application/json');
+          }
+          
+          if (response.code === 200) {
+            Toast.success(response.msg || (currentEditingId ? '课程修改成功' : '课程创建成功'));
+            closeModal();
+            await loadClassesData();
+          } else {
+            Toast.error(response.msg || '操作失败');
+          }
+        } catch (error) {
+          console.error('Submit class error:', error);
+          Toast.error('操作失败，请稍后重试');
+        } finally {
+          DOM.enableButton(submitBtn);
+        }
+      }
+      
+      // 表单验证
+      function validateForm() {
+        clearFormErrors();
+        let isValid = true;
+        
+        // 验证课程名称
+        if (!className.value.trim()) {
+          showFieldError('name-error', '课程名称不能为空');
+          isValid = false;
+        }
+        
+        // 验证课程类型
+        if (!classType.value) {
+          showFieldError('type-error', '请选择课程类型');
+          isValid = false;
+        }
+        
+        // 验证教练
+        if (!classInstructor.value.trim()) {
+          showFieldError('instructor-error', '教练姓名不能为空');
+          isValid = false;
+        }
+        
+        // 验证容量
+        const capacity = parseInt(classCapacity.value);
+        if (!capacity || capacity < 1) {
+          showFieldError('capacity-error', '容量必须为正整数');
+          isValid = false;
+        }
+        
+        // 验证时间
+        if (!classTime.value) {
+          showFieldError('time-error', '请选择课程时间');
+          isValid = false;
+        } else {
+          const selectedTime = new Date(classTime.value);
+          const now = new Date();
+          if (selectedTime <= now && !currentEditingId) {
+            showFieldError('time-error', '课程时间必须晚于当前时间');
+            isValid = false;
+          }
+        }
+        
+        // 验证地点
+        if (!classLocation.value.trim()) {
+          showFieldError('location-error', '上课地点不能为空');
+          isValid = false;
+        }
+        
+        return isValid;
+      }
+      
+      // 显示字段错误
+      function showFieldError(errorId, message) {
+        const errorElement = DOM.get(`#${errorId}`);
+        if (errorElement) {
+          errorElement.textContent = message;
+        }
+      }
+      
+      // 清除表单错误
+      function clearFormErrors() {
+        const errorElements = classModal.querySelectorAll('.error-message');
+        errorElements.forEach(element => {
+          element.textContent = '';
+        });
+      }
+      
+      // 显示加载状态
+      function showLoading() {
+        loadingContainer.style.display = 'flex';
+        classesGrid.style.display = 'none';
+        emptyState.style.display = 'none';
+        pagination.style.display = 'none';
+      }
+      
+      // 隐藏加载状态
+      function hideLoading() {
+        loadingContainer.style.display = 'none';
+      }
+      
+      // 显示课程网格
+      function showGrid() {
+        classesGrid.style.display = 'grid';
+        emptyState.style.display = 'none';
+      }
+      
+      // 显示空状态
+      function showEmptyState() {
+        classesGrid.style.display = 'none';
+        emptyState.style.display = 'block';
+        pagination.style.display = 'none';
+      }
+      
+      // 全局函数：查看课程详情
+      window.viewClassDetail = async function(classId) {
+        try {
+          const response = await API.get(`/fitness-classes/${classId}`);
+          
+          if (response.code === 200) {
+            const classItem = response.data;
+            
+            // 获取参与者信息
+            const participantsResponse = await API.get(`/fitness-classes/${classId}/participants`);
+            const participants = participantsResponse.code === 200 ? participantsResponse.data : [];
+            
+            // 渲染详情内容
+            classDetailContent.innerHTML = `
+              <div class="class-detail">
+                <div class="detail-section">
+                  <h4>基本信息</h4>
+                  <div class="detail-grid">
+                    <div class="detail-item">
+                      <label>课程名称：</label>
+                      <span>${classItem.name}</span>
+                    </div>
+                    <div class="detail-item">
+                      <label>课程类型：</label>
+                      <span>${classItem.type}</span>
+                    </div>
+                    <div class="detail-item">
+                      <label>教练：</label>
+                      <span>${classItem.instructor}</span>
+                    </div>
+                    <div class="detail-item">
+                      <label>容量：</label>
+                      <span>${classItem.capacity}人</span>
+                    </div>
+                    <div class="detail-item">
+                      <label>时间：</label>
+                      <span>${Utils.formatDate(classItem.time, 'YYYY-MM-DD HH:mm')}</span>
+                    </div>
+                    <div class="detail-item">
+                      <label>地点：</label>
+                      <span>${classItem.location}</span>
+                    </div>
+                    <div class="detail-item">
+                      <label>状态：</label>
+                      <span class="class-status status-${classItem.status.toLowerCase()}">
+                        ${getStatusText(classItem.status)}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="detail-section">
+                  <h4>参与者列表 (${participants.length}/${classItem.capacity})</h4>
+                  <div class="participants-list">
+                    ${participants.length > 0 ? 
+                      participants.map(p => `
+                        <div class="participant-item">
+                          <i class="fas fa-user"></i>
+                          <span>${p.username}</span>
+                          <small>${p.phone}</small>
+                        </div>
+                      `).join('') :
+                      '<p class="no-participants">暂无参与者</p>'
+                    }
+                  </div>
+                </div>
+              </div>
+              
+              <style>
+                .detail-section {
+                  margin-bottom: 24px;
+                }
+                .detail-section h4 {
+                  margin-bottom: 16px;
+                  color: #1e293b;
+                  border-bottom: 2px solid #e2e8f0;
+                  padding-bottom: 8px;
+                }
+                .detail-grid {
+                  display: grid;
+                  grid-template-columns: 1fr 1fr;
+                  gap: 12px;
+                }
+                .detail-item {
+                  display: flex;
+                  align-items: center;
+                }
+                .detail-item label {
+                  font-weight: 500;
+                  color: #4b5563;
+                  margin-right: 8px;
+                  min-width: 80px;
+                }
+                .participants-list {
+                  max-height: 200px;
+                  overflow-y: auto;
+                }
+                .participant-item {
+                  display: flex;
+                  align-items: center;
+                  gap: 12px;
+                  padding: 8px 0;
+                  border-bottom: 1px solid #f1f5f9;
+                }
+                .participant-item i {
+                  color: #6b7280;
+                }
+                .participant-item small {
+                  color: #9ca3af;
+                }
+                .no-participants {
+                  color: #9ca3af;
+                  text-align: center;
+                  padding: 20px;
+                }
+              </style>
+            `;
+            
+            DOM.addClass(classDetailModal, 'show');
+          } else {
+            Toast.error(response.msg || '获取课程详情失败');
+          }
+        } catch (error) {
+          console.error('View class detail error:', error);
+          Toast.error('获取课程详情失败，请稍后重试');
+        }
+      };
+      
+      // 全局函数：编辑课程
+      window.editClass = function(classId) {
+        openModal('edit', classId);
+      };
+      
+      // 全局函数：删除课程
+      window.deleteClass = function(classId, className) {
+        if (confirm(`确定要删除课程"${className}"吗？此操作不可恢复。`)) {
+          handleDeleteClass(classId);
+        }
+      };
+      
+      // 处理删除课程
+      async function handleDeleteClass(classId) {
+        try {
+          const response = await API.delete(`/fitness-classes/${classId}`);
+          
+          if (response.code === 200) {
+            Toast.success(response.msg || '课程删除成功');
+            await loadClassesData();
+          } else {
+            Toast.error(response.msg || '删除失败');
+          }
+        } catch (error) {
+          console.error('Delete class error:', error);
+          Toast.error('删除失败，请稍后重试');
+        }
+      }
+    });
+  </script>
+</body>
+</html>

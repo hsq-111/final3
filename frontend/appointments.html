@@ -1,0 +1,1428 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>预约管理 - 健身管理系统</title>
+  <link rel="stylesheet" href="css/style.css">
+  <!-- 引入Font Awesome图标库 -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    /* 继承仪表盘布局样式 */
+    .dashboard-container {
+      display: flex;
+      min-height: 100vh;
+    }
+    
+    /* 侧边栏导航 */
+    .sidebar {
+      width: 240px;
+      background-color: #1e293b;
+      color: white;
+      position: fixed;
+      height: 100vh;
+      overflow-y: auto;
+      transition: width 0.3s ease;
+      z-index: 100;
+    }
+    
+    .sidebar-header {
+      padding: 20px;
+      border-bottom: 1px solid #334155;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    
+    .sidebar-header i {
+      font-size: 1.5rem;
+      color: #3b82f6;
+    }
+    
+    .sidebar-header h2 {
+      margin: 0;
+      font-size: 1.25rem;
+      font-weight: 600;
+    }
+    
+    .nav-menu {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    
+    .nav-item {
+      position: relative;
+    }
+    
+    .nav-link {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 16px 20px;
+      color: #cbd5e1;
+      text-decoration: none;
+      transition: all 0.2s ease;
+    }
+    
+    .nav-link:hover {
+      background-color: #334155;
+      color: white;
+    }
+    
+    .nav-link.active {
+      background-color: #3b82f6;
+      color: white;
+    }
+    
+    .nav-link i {
+      font-size: 1.125rem;
+      width: 24px;
+      text-align: center;
+    }
+    
+    /* 主内容区域 */
+    .main-content {
+      flex: 1;
+      margin-left: 240px;
+      transition: margin-left 0.3s ease;
+    }
+    
+    /* 顶部导航 */
+    .top-nav {
+      background-color: white;
+      padding: 16px 24px;
+      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+    
+    .top-nav-left {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    
+    .toggle-sidebar {
+      font-size: 1.25rem;
+      cursor: pointer;
+      color: #334155;
+    }
+    
+    .top-nav-right {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    
+    .user-profile {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+    }
+    
+    .user-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background-color: #3b82f6;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: 600;
+    }
+    
+    .user-info {
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .user-name {
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: #1e293b;
+    }
+    
+    .user-role {
+      font-size: 0.75rem;
+      color: #64748b;
+    }
+    
+    /* 内容包装器 */
+    .content-wrapper {
+      padding: 24px;
+    }
+    
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 24px;
+    }
+    
+    .page-header h1 {
+      margin: 0;
+      font-size: 1.875rem;
+      color: #1e293b;
+    }
+    
+    .page-header p {
+      color: #64748b;
+      margin-top: 4px;
+    }
+    
+    /* 工具栏 */
+    .toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      gap: 16px;
+    }
+    
+    .toolbar-left {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+    }
+    
+    .search-box {
+      position: relative;
+      width: 250px;
+    }
+    
+    .search-input {
+      width: 100%;
+      padding: 10px 16px 10px 40px;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      font-size: 0.875rem;
+    }
+    
+    .search-icon {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #64748b;
+    }
+    
+    .filter-select {
+      padding: 10px 16px;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      font-size: 0.875rem;
+      background-color: white;
+    }
+    
+    .toolbar-actions {
+      display: flex;
+      gap: 12px;
+    }
+    
+    /* 表格样式 */
+    .table-container {
+      background-color: white;
+      border-radius: 12px;
+      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+    }
+    
+    .table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    
+    .table th,
+    .table td {
+      padding: 12px 16px;
+      text-align: left;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    
+    .table th {
+      background-color: #f8fafc;
+      font-weight: 600;
+      color: #374151;
+      font-size: 0.875rem;
+    }
+    
+    .table td {
+      font-size: 0.875rem;
+      color: #4b5563;
+    }
+    
+    .table tbody tr:hover {
+      background-color: #f9fafb;
+    }
+    
+    /* 状态标签 */
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 500;
+    }
+    
+    .status-confirmed {
+      background-color: #d1fae5;
+      color: #065f46;
+    }
+    
+    .status-cancelled {
+      background-color: #fee2e2;
+      color: #991b1b;
+    }
+    
+    .status-pending {
+      background-color: #fef3c7;
+      color: #92400e;
+    }
+    
+    /* 操作按钮 */
+    .action-buttons {
+      display: flex;
+      gap: 8px;
+    }
+    
+    .btn-sm {
+      padding: 6px 12px;
+      font-size: 0.75rem;
+    }
+    
+    .btn-view {
+      background-color: #6b7280;
+      color: white;
+    }
+    
+    .btn-view:hover {
+      background-color: #4b5563;
+    }
+    
+    .btn-edit {
+      background-color: #3b82f6;
+      color: white;
+    }
+    
+    .btn-edit:hover {
+      background-color: #2563eb;
+    }
+    
+    .btn-cancel {
+      background-color: #ef4444;
+      color: white;
+    }
+    
+    .btn-cancel:hover {
+      background-color: #dc2626;
+    }
+    
+    /* 模态框 */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+    }
+    
+    .modal.show {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .modal-content {
+      background-color: white;
+      border-radius: 12px;
+      padding: 24px;
+      width: 90%;
+      max-width: 600px;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    
+    .modal-title {
+      margin: 0;
+      font-size: 1.25rem;
+      color: #1e293b;
+    }
+    
+    .modal-close {
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      cursor: pointer;
+      color: #64748b;
+    }
+    
+    .modal-close:hover {
+      color: #374151;
+    }
+    
+    .modal-footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+      margin-top: 20px;
+    }
+    
+    /* 表单布局 */
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+    
+    /* 课程选择器 */
+    .class-selector {
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+    
+    .class-option {
+      padding: 12px 16px;
+      border-bottom: 1px solid #e2e8f0;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+    }
+    
+    .class-option:hover {
+      background-color: #f9fafb;
+    }
+    
+    .class-option.selected {
+      background-color: #dbeafe;
+      border-color: #3b82f6;
+    }
+    
+    .class-option:last-child {
+      border-bottom: none;
+    }
+    
+    .class-name {
+      font-weight: 500;
+      color: #1e293b;
+    }
+    
+    .class-details {
+      font-size: 0.875rem;
+      color: #6b7280;
+      margin-top: 4px;
+    }
+    
+    /* 加载状态 */
+    .loading-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 40px;
+    }
+    
+    .loading-spinner {
+      border: 3px solid #f3f4f6;
+      border-top: 3px solid #3b82f6;
+      border-radius: 50%;
+      width: 24px;
+      height: 24px;
+      animation: spin 1s linear infinite;
+    }
+    
+    /* 空状态 */
+    .empty-state {
+      text-align: center;
+      padding: 40px 20px;
+      color: #64748b;
+    }
+    
+    .empty-state i {
+      font-size: 3rem;
+      margin-bottom: 16px;
+      color: #cbd5e1;
+    }
+    
+    /* 分页 */
+    .pagination {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 24px;
+    }
+    
+    .pagination button {
+      padding: 8px 12px;
+      border: 1px solid #cbd5e1;
+      background-color: white;
+      color: #374151;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    
+    .pagination button:hover {
+      background-color: #f3f4f6;
+    }
+    
+    .pagination button.active {
+      background-color: #3b82f6;
+      color: white;
+      border-color: #3b82f6;
+    }
+    
+    .pagination button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    
+    /* 响应式设计 */
+    @media (max-width: 768px) {
+      .sidebar {
+        transform: translateX(-100%);
+      }
+      
+      .sidebar.open {
+        transform: translateX(0);
+      }
+      
+      .main-content {
+        margin-left: 0;
+      }
+      
+      .toolbar {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      
+      .toolbar-left {
+        flex-direction: column;
+      }
+      
+      .search-box {
+        width: 100%;
+      }
+      
+      .table-container {
+        overflow-x: auto;
+      }
+      
+      .form-row {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="dashboard-container">
+    <!-- 侧边栏导航 -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <i class="fas fa-dumbbell"></i>
+        <h2>健身管理系统</h2>
+      </div>
+      
+      <ul class="nav-menu">
+        <li class="nav-item">
+          <a href="dashboard.html" class="nav-link">
+            <i class="fas fa-home"></i>
+            <span>首页</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="members.html" class="nav-link">
+            <i class="fas fa-users"></i>
+            <span>会员管理</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="equipment.html" class="nav-link">
+            <i class="fas fa-tools"></i>
+            <span>器材管理</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="trainers.html" class="nav-link">
+            <i class="fas fa-user-tie"></i>
+            <span>教练管理</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="classes.html" class="nav-link">
+            <i class="fas fa-calendar-alt"></i>
+            <span>课程管理</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="appointments.html" class="nav-link active">
+            <i class="fas fa-clipboard-list"></i>
+            <span>预约管理</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="reports.html" class="nav-link">
+            <i class="fas fa-chart-bar"></i>
+            <span>数据报表</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="settings.html" class="nav-link">
+            <i class="fas fa-cog"></i>
+            <span>系统设置</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="javascript:void(0)" id="logout-button" class="nav-link">
+            <i class="fas fa-sign-out-alt"></i>
+            <span>退出登录</span>
+          </a>
+        </li>
+      </ul>
+    </aside>
+    
+    <!-- 主内容区域 -->
+    <main class="main-content">
+      <!-- 顶部导航 -->
+      <nav class="top-nav">
+        <div class="top-nav-left">
+          <i class="fas fa-bars toggle-sidebar" id="toggle-sidebar"></i>
+        </div>
+        <div class="top-nav-right">
+          <div class="user-profile">
+            <div class="user-avatar" id="user-avatar">AD</div>
+            <div class="user-info">
+              <span class="user-name" id="user-name">管理员</span>
+              <span class="user-role">超级管理员</span>
+            </div>
+          </div>
+        </div>
+      </nav>
+      
+      <!-- 内容包装器 -->
+      <div class="content-wrapper">
+        <!-- 页面标题 -->
+        <div class="page-header">
+          <div>
+            <h1>预约管理</h1>
+            <p>管理所有课程预约和预定记录</p>
+          </div>
+        </div>
+        
+        <!-- 工具栏 -->
+        <div class="toolbar">
+          <div class="toolbar-left">
+            <div class="search-box">
+              <i class="fas fa-search search-icon"></i>
+              <input type="text" class="search-input" placeholder="搜索预约ID或用户..." id="search-input">
+            </div>
+            <select class="filter-select" id="status-filter">
+              <option value="">所有状态</option>
+              <option value="CONFIRMED">已确认</option>
+              <option value="CANCELLED">已取消</option>
+              <option value="PENDING">待确认</option>
+            </select>
+          </div>
+          <div class="toolbar-actions">
+            <button class="btn btn-primary" id="add-reservation-btn">
+              <i class="fas fa-plus mr-2"></i>新建预约
+            </button>
+          </div>
+        </div>
+        
+        <!-- 预约列表 -->
+        <div class="table-container">
+          <div id="loading-container" class="loading-container" style="display: none;">
+            <div class="loading-spinner"></div>
+            <span style="margin-left: 12px;">加载中...</span>
+          </div>
+          
+          <table class="table" id="reservations-table" style="display: none;">
+            <thead>
+              <tr>
+                <th>预约ID</th>
+                <th>用户ID</th>
+                <th>设施ID</th>
+                <th>开始时间</th>
+                <th>结束时间</th>
+                <th>状态</th>
+                <th>创建时间</th>
+                <th>操作</th>
+              </tr>
+            </thead>
+            <tbody id="reservations-tbody">
+              <!-- 预约数据将在这里渲染 -->
+            </tbody>
+          </table>
+          
+          <div id="empty-state" class="empty-state" style="display: none;">
+            <i class="fas fa-clipboard-list"></i>
+            <h3>暂无预约数据</h3>
+            <p>点击上方"新建预约"按钮开始创建预约</p>
+          </div>
+        </div>
+        
+        <!-- 分页 -->
+        <div class="pagination" id="pagination" style="display: none;">
+          <!-- 分页按钮将在这里渲染 -->
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- 新建预约模态框 -->
+  <div class="modal" id="reservation-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title" id="modal-title">新建预约</h3>
+        <button class="modal-close" id="modal-close">&times;</button>
+      </div>
+      
+      <form id="reservation-form">
+        <div class="form-group">
+          <label for="class-selector" class="form-label">选择课程</label>
+          <div id="class-selector" class="class-selector">
+            <div class="loading-container" id="classes-loading">
+              <div class="loading-spinner"></div>
+              <span style="margin-left: 12px;">加载课程列表...</span>
+            </div>
+          </div>
+          <div id="class-error" class="error-message"></div>
+        </div>
+        
+        <div class="form-row">
+          <div class="form-group">
+            <label for="start-time" class="form-label">开始时间</label>
+            <input type="datetime-local" id="start-time" name="startTime" class="form-input" required>
+            <div id="start-time-error" class="error-message"></div>
+          </div>
+          
+          <div class="form-group">
+            <label for="end-time" class="form-label">结束时间</label>
+            <input type="datetime-local" id="end-time" name="endTime" class="form-input" required>
+            <div id="end-time-error" class="error-message"></div>
+          </div>
+        </div>
+        
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" id="cancel-btn">取消</button>
+          <button type="submit" class="btn btn-primary" id="submit-btn">创建预约</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 编辑预约模态框 -->
+  <div class="modal" id="edit-reservation-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">编辑预约</h3>
+        <button class="modal-close" id="edit-modal-close">&times;</button>
+      </div>
+      
+      <form id="edit-reservation-form">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="edit-start-time" class="form-label">开始时间</label>
+            <input type="datetime-local" id="edit-start-time" name="startTime" class="form-input" required>
+            <div id="edit-start-time-error" class="error-message"></div>
+          </div>
+          
+          <div class="form-group">
+            <label for="edit-end-time" class="form-label">结束时间</label>
+            <input type="datetime-local" id="edit-end-time" name="endTime" class="form-input" required>
+            <div id="edit-end-time-error" class="error-message"></div>
+          </div>
+        </div>
+        
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" id="edit-cancel-btn">取消</button>
+          <button type="submit" class="btn btn-primary" id="edit-submit-btn">保存修改</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="js/app.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // 检查登录状态
+      if (!Auth.isLoggedIn()) {
+        window.location.href = 'login.html';
+        return;
+      }
+      
+      // 页面元素
+      const searchInput = DOM.get('#search-input');
+      const statusFilter = DOM.get('#status-filter');
+      const addReservationBtn = DOM.get('#add-reservation-btn');
+      const reservationsTable = DOM.get('#reservations-table');
+      const reservationsTbody = DOM.get('#reservations-tbody');
+      const loadingContainer = DOM.get('#loading-container');
+      const emptyState = DOM.get('#empty-state');
+      const pagination = DOM.get('#pagination');
+      
+      // 新建预约模态框元素
+      const reservationModal = DOM.get('#reservation-modal');
+      const modalTitle = DOM.get('#modal-title');
+      const modalClose = DOM.get('#modal-close');
+      const reservationForm = DOM.get('#reservation-form');
+      const cancelBtn = DOM.get('#cancel-btn');
+      const submitBtn = DOM.get('#submit-btn');
+      const classSelector = DOM.get('#class-selector');
+      const classesLoading = DOM.get('#classes-loading');
+      const startTime = DOM.get('#start-time');
+      const endTime = DOM.get('#end-time');
+      
+      // 编辑预约模态框元素
+      const editReservationModal = DOM.get('#edit-reservation-modal');
+      const editModalClose = DOM.get('#edit-modal-close');
+      const editReservationForm = DOM.get('#edit-reservation-form');
+      const editCancelBtn = DOM.get('#edit-cancel-btn');
+      const editSubmitBtn = DOM.get('#edit-submit-btn');
+      const editStartTime = DOM.get('#edit-start-time');
+      const editEndTime = DOM.get('#edit-end-time');
+      
+      // 用户信息
+      const userInfo = Auth.getUserInfo();
+      if (userInfo && userInfo.username) {
+        DOM.text(DOM.get('#user-name'), userInfo.username);
+        const initial = userInfo.username.charAt(0).toUpperCase();
+        DOM.text(DOM.get('#user-avatar'), initial);
+      }
+      
+      // 数据状态
+      let reservationsData = [];
+      let filteredData = [];
+      let availableClasses = [];
+      let selectedClassId = null;
+      let currentEditingId = null;
+      let currentPage = 1;
+      const pageSize = 10;
+      
+      // 初始化页面
+      init();
+      
+      async function init() {
+        await loadReservationsData();
+        bindEvents();
+      }
+      
+      function bindEvents() {
+        // 侧边栏切换
+        DOM.on(DOM.get('#toggle-sidebar'), 'click', function() {
+          DOM.toggleClass(DOM.get('#sidebar'), 'open');
+        });
+        
+        // 退出登录
+        DOM.on(DOM.get('#logout-button'), 'click', function() {
+          if (confirm('确定要退出登录吗？')) {
+            Auth.logout();
+          }
+        });
+        
+        // 搜索功能
+        DOM.on(searchInput, 'input', Utils.debounce(function() {
+          filterReservations();
+        }, 300));
+        
+        // 筛选功能
+        DOM.on(statusFilter, 'change', function() {
+          filterReservations();
+        });
+        
+        // 新建预约
+        DOM.on(addReservationBtn, 'click', function() {
+          openNewReservationModal();
+        });
+        
+        // 模态框关闭
+        DOM.on([modalClose, cancelBtn], 'click', function() {
+          closeNewReservationModal();
+        });
+        
+        DOM.on([editModalClose, editCancelBtn], 'click', function() {
+          closeEditReservationModal();
+        });
+        
+        // 模态框背景点击关闭
+        DOM.on(reservationModal, 'click', function(e) {
+          if (e.target === reservationModal) {
+            closeNewReservationModal();
+          }
+        });
+        
+        DOM.on(editReservationModal, 'click', function(e) {
+          if (e.target === editReservationModal) {
+            closeEditReservationModal();
+          }
+        });
+        
+        // 表单提交
+        DOM.on(reservationForm, 'submit', function(e) {
+          e.preventDefault();
+          handleNewReservationSubmit();
+        });
+        
+        DOM.on(editReservationForm, 'submit', function(e) {
+          e.preventDefault();
+          handleEditReservationSubmit();
+        });
+        
+        // 时间联动
+        DOM.on(startTime, 'change', function() {
+          updateEndTimeConstraint();
+        });
+        
+        DOM.on(editStartTime, 'change', function() {
+          updateEditEndTimeConstraint();
+        });
+      }
+      
+      // 加载预约数据
+      async function loadReservationsData() {
+        try {
+          showLoading();
+          const response = await API.get('/reservations');
+          
+          if (response.code === 200) {
+            reservationsData = response.data?.list || [];
+            filteredData = [...reservationsData];
+            renderReservationsTable();
+          } else {
+            Toast.error(response.msg || '获取预约数据失败');
+            showEmptyState();
+          }
+        } catch (error) {
+          console.error('Load reservations data error:', error);
+          Toast.error('获取预约数据失败，请稍后重试');
+          showEmptyState();
+        } finally {
+          hideLoading();
+        }
+      }
+      
+      // 过滤预约
+      function filterReservations() {
+        const searchTerm = searchInput.value.trim().toLowerCase();
+        const statusValue = statusFilter.value;
+        
+        filteredData = reservationsData.filter(reservation => {
+          const matchSearch = !searchTerm || 
+            reservation.reservation_id.toString().includes(searchTerm) ||
+            reservation.user_id.toString().includes(searchTerm);
+          
+          const matchStatus = !statusValue || reservation.status === statusValue;
+          
+          return matchSearch && matchStatus;
+        });
+        
+        currentPage = 1;
+        renderReservationsTable();
+      }
+      
+      // 渲染预约表格
+      function renderReservationsTable() {
+        if (!filteredData || filteredData.length === 0) {
+          showEmptyState();
+          return;
+        }
+        
+        // 分页计算
+        const totalPages = Math.ceil(filteredData.length / pageSize);
+        const startIndex = (currentPage - 1) * pageSize;
+        const endIndex = startIndex + pageSize;
+        const pageData = filteredData.slice(startIndex, endIndex);
+        
+        DOM.empty(reservationsTbody);
+        
+        pageData.forEach(reservation => {
+          const row = DOM.create('tr');
+          row.innerHTML = `
+            <td>${reservation.reservation_id}</td>
+            <td>${reservation.user_id}</td>
+            <td>${reservation.facility_id}</td>
+            <td>${Utils.formatDate(reservation.start_time, 'YYYY-MM-DD HH:mm')}</td>
+            <td>${Utils.formatDate(reservation.end_time, 'YYYY-MM-DD HH:mm')}</td>
+            <td>
+              <span class="status-badge status-${reservation.status.toLowerCase()}">
+                ${getStatusText(reservation.status)}
+              </span>
+            </td>
+            <td>${Utils.formatDate(reservation.created_at, 'YYYY-MM-DD')}</td>
+            <td>
+              <div class="action-buttons">
+                <button class="btn btn-sm btn-view" onclick="viewReservationDetail(${reservation.reservation_id})">
+                  <i class="fas fa-eye"></i> 详情
+                </button>
+                ${reservation.status === 'CONFIRMED' ? `
+                  <button class="btn btn-sm btn-edit" onclick="editReservation(${reservation.reservation_id})">
+                    <i class="fas fa-edit"></i> 编辑
+                  </button>
+                  <button class="btn btn-sm btn-cancel" onclick="cancelReservation(${reservation.reservation_id})">
+                    <i class="fas fa-times"></i> 取消
+                  </button>
+                ` : ''}
+              </div>
+            </td>
+          `;
+          reservationsTbody.appendChild(row);
+        });
+        
+        showTable();
+        renderPagination(totalPages);
+      }
+      
+      // 渲染分页
+      function renderPagination(totalPages) {
+        if (totalPages <= 1) {
+          pagination.style.display = 'none';
+          return;
+        }
+        
+        DOM.empty(pagination);
+        
+        // 上一页按钮
+        const prevBtn = DOM.create('button');
+        prevBtn.textContent = '上一页';
+        prevBtn.disabled = currentPage === 1;
+        DOM.on(prevBtn, 'click', function() {
+          if (currentPage > 1) {
+            currentPage--;
+            renderReservationsTable();
+          }
+        });
+        pagination.appendChild(prevBtn);
+        
+        // 页码按钮
+        for (let i = 1; i <= totalPages; i++) {
+          const pageBtn = DOM.create('button');
+          pageBtn.textContent = i;
+          if (i === currentPage) {
+            DOM.addClass(pageBtn, 'active');
+          }
+          DOM.on(pageBtn, 'click', function() {
+            currentPage = i;
+            renderReservationsTable();
+          });
+          pagination.appendChild(pageBtn);
+        }
+        
+        // 下一页按钮
+        const nextBtn = DOM.create('button');
+        nextBtn.textContent = '下一页';
+        nextBtn.disabled = currentPage === totalPages;
+        DOM.on(nextBtn, 'click', function() {
+          if (currentPage < totalPages) {
+            currentPage++;
+            renderReservationsTable();
+          }
+        });
+        pagination.appendChild(nextBtn);
+        
+        pagination.style.display = 'flex';
+      }
+      
+      // 获取状态文本
+      function getStatusText(status) {
+        const statusMap = {
+          'CONFIRMED': '已确认',
+          'CANCELLED': '已取消',
+          'PENDING': '待确认'
+        };
+        return statusMap[status] || status;
+      }
+      
+      // 打开新建预约模态框
+      async function openNewReservationModal() {
+        selectedClassId = null;
+        reservationForm.reset();
+        clearFormErrors();
+        
+        // 加载可用课程
+        await loadAvailableClasses();
+        
+        DOM.addClass(reservationModal, 'show');
+      }
+      
+      // 关闭新建预约模态框
+      function closeNewReservationModal() {
+        DOM.removeClass(reservationModal, 'show');
+        selectedClassId = null;
+        reservationForm.reset();
+        clearFormErrors();
+      }
+      
+      // 打开编辑预约模态框
+      function openEditReservationModal(reservationId) {
+        currentEditingId = reservationId;
+        
+        // 填充表单数据
+        const reservation = reservationsData.find(item => item.reservation_id === reservationId);
+        if (reservation) {
+          const startDate = new Date(reservation.start_time);
+          const endDate = new Date(reservation.end_time);
+          
+          editStartTime.value = startDate.toISOString().slice(0, 16);
+          editEndTime.value = endDate.toISOString().slice(0, 16);
+        }
+        
+        clearEditFormErrors();
+        DOM.addClass(editReservationModal, 'show');
+      }
+      
+      // 关闭编辑预约模态框
+      function closeEditReservationModal() {
+        DOM.removeClass(editReservationModal, 'show');
+        currentEditingId = null;
+        editReservationForm.reset();
+        clearEditFormErrors();
+      }
+      
+      // 加载可用课程
+      async function loadAvailableClasses() {
+        try {
+          classesLoading.style.display = 'flex';
+          
+          const response = await API.get('/fitness-classes');
+          
+          if (response.code === 200) {
+            availableClasses = response.data?.list?.filter(c => c.status === 'ACTIVE') || [];
+            renderClassSelector();
+          } else {
+            Toast.error(response.msg || '获取课程列表失败');
+            availableClasses = [];
+            renderClassSelector();
+          }
+        } catch (error) {
+          console.error('Load available classes error:', error);
+          Toast.error('获取课程列表失败，请稍后重试');
+          availableClasses = [];
+          renderClassSelector();
+        } finally {
+          classesLoading.style.display = 'none';
+        }
+      }
+      
+      // 渲染课程选择器
+      function renderClassSelector() {
+        DOM.empty(classSelector);
+        
+        if (availableClasses.length === 0) {
+          const emptyDiv = DOM.create('div', 'class-option');
+          emptyDiv.innerHTML = '<div style="text-align: center; color: #9ca3af;">暂无可用课程</div>';
+          classSelector.appendChild(emptyDiv);
+          return;
+        }
+        
+        availableClasses.forEach(classItem => {
+          const option = DOM.create('div', 'class-option');
+          option.dataset.classId = classItem.class_id;
+          option.innerHTML = `
+            <div class="class-name">${classItem.name}</div>
+            <div class="class-details">
+              ${classItem.type} | ${classItem.instructor} | ${Utils.formatDate(classItem.time, 'YYYY-MM-DD HH:mm')} | ${classItem.location}
+            </div>
+          `;
+          
+          DOM.on(option, 'click', function() {
+            // 清除之前的选择
+            classSelector.querySelectorAll('.class-option').forEach(opt => {
+              DOM.removeClass(opt, 'selected');
+            });
+            
+            // 选择当前课程
+            DOM.addClass(option, 'selected');
+            selectedClassId = parseInt(classItem.class_id);
+            
+            // 自动填充时间
+            const classTime = new Date(classItem.time);
+            const endDateTime = new Date(classTime.getTime() + 90 * 60 * 1000); // 默认90分钟
+            
+            startTime.value = classTime.toISOString().slice(0, 16);
+            endTime.value = endDateTime.toISOString().slice(0, 16);
+          });
+          
+          classSelector.appendChild(option);
+        });
+      }
+      
+      // 更新结束时间约束
+      function updateEndTimeConstraint() {
+        if (startTime.value) {
+          const startDate = new Date(startTime.value);
+          const minEndDate = new Date(startDate.getTime() + 30 * 60 * 1000); // 最短30分钟
+          endTime.min = minEndDate.toISOString().slice(0, 16);
+          
+          // 如果当前结束时间早于最小值，自动调整
+          if (endTime.value && new Date(endTime.value) <= startDate) {
+            endTime.value = minEndDate.toISOString().slice(0, 16);
+          }
+        }
+      }
+      
+      // 更新编辑表单结束时间约束
+      function updateEditEndTimeConstraint() {
+        if (editStartTime.value) {
+          const startDate = new Date(editStartTime.value);
+          const minEndDate = new Date(startDate.getTime() + 30 * 60 * 1000); // 最短30分钟
+          editEndTime.min = minEndDate.toISOString().slice(0, 16);
+          
+          // 如果当前结束时间早于最小值，自动调整
+          if (editEndTime.value && new Date(editEndTime.value) <= startDate) {
+            editEndTime.value = minEndDate.toISOString().slice(0, 16);
+          }
+        }
+      }
+      
+      // 处理新建预约提交
+      async function handleNewReservationSubmit() {
+        if (!validateNewReservationForm()) {
+          return;
+        }
+        
+        const formData = {
+          classId: selectedClassId,
+          startTime: new Date(startTime.value).toISOString().replace('T', ' ').slice(0, 19),
+          endTime: new Date(endTime.value).toISOString().replace('T', ' ').slice(0, 19)
+        };
+        
+        try {
+          DOM.disableButton(submitBtn, '<i class="fas fa-spinner fa-spin mr-2"></i>创建中...');
+          
+          const response = await API.post('/reservations', formData, true, 'application/json');
+          
+          if (response.code === 200) {
+            Toast.success(response.msg || '预约创建成功');
+            closeNewReservationModal();
+            await loadReservationsData();
+          } else {
+            Toast.error(response.msg || '预约创建失败');
+          }
+        } catch (error) {
+          console.error('Submit new reservation error:', error);
+          Toast.error('预约创建失败，请稍后重试');
+        } finally {
+          DOM.enableButton(submitBtn);
+        }
+      }
+      
+      // 处理编辑预约提交
+      async function handleEditReservationSubmit() {
+        if (!validateEditReservationForm()) {
+          return;
+        }
+        
+        const formData = {
+          startTime: new Date(editStartTime.value).toISOString().replace('T', ' ').slice(0, 19),
+          endTime: new Date(editEndTime.value).toISOString().replace('T', ' ').slice(0, 19)
+        };
+        
+        try {
+          DOM.disableButton(editSubmitBtn, '<i class="fas fa-spinner fa-spin mr-2"></i>保存中...');
+          
+          const response = await API.put(`/reservations/${currentEditingId}`, formData, true, 'application/json');
+          
+          if (response.code === 200) {
+            Toast.success(response.msg || '预约修改成功');
+            closeEditReservationModal();
+            await loadReservationsData();
+          } else {
+            Toast.error(response.msg || '预约修改失败');
+          }
+        } catch (error) {
+          console.error('Submit edit reservation error:', error);
+          Toast.error('预约修改失败，请稍后重试');
+        } finally {
+          DOM.enableButton(editSubmitBtn);
+        }
+      }
+      
+      // 验证新建预约表单
+      function validateNewReservationForm() {
+        clearFormErrors();
+        let isValid = true;
+        
+        // 验证课程选择
+        if (!selectedClassId) {
+          showFieldError('class-error', '请选择课程');
+          isValid = false;
+        }
+        
+        // 验证开始时间
+        if (!startTime.value) {
+          showFieldError('start-time-error', '请选择开始时间');
+          isValid = false;
+        } else {
+          const startDate = new Date(startTime.value);
+          const now = new Date();
+          if (startDate <= now) {
+            showFieldError('start-time-error', '开始时间必须晚于当前时间');
+            isValid = false;
+          }
+        }
+        
+        // 验证结束时间
+        if (!endTime.value) {
+          showFieldError('end-time-error', '请选择结束时间');
+          isValid = false;
+        } else if (startTime.value) {
+          const startDate = new Date(startTime.value);
+          const endDate = new Date(endTime.value);
+          if (endDate <= startDate) {
+            showFieldError('end-time-error', '结束时间必须晚于开始时间');
+            isValid = false;
+          }
+        }
+        
+        return isValid;
+      }
+      
+      // 验证编辑预约表单
+      function validateEditReservationForm() {
+        clearEditFormErrors();
+        let isValid = true;
+        
+        // 验证开始时间
+        if (!editStartTime.value) {
+          showEditFieldError('edit-start-time-error', '请选择开始时间');
+          isValid = false;
+        }
+        
+        // 验证结束时间
+        if (!editEndTime.value) {
+          showEditFieldError('edit-end-time-error', '请选择结束时间');
+          isValid = false;
+        } else if (editStartTime.value) {
+          const startDate = new Date(editStartTime.value);
+          const endDate = new Date(editEndTime.value);
+          if (endDate <= startDate) {
+            showEditFieldError('edit-end-time-error', '结束时间必须晚于开始时间');
+            isValid = false;
+          }
+        }
+        
+        return isValid;
+      }
+      
+      // 显示字段错误
+      function showFieldError(errorId, message) {
+        const errorElement = DOM.get(`#${errorId}`);
+        if (errorElement) {
+          errorElement.textContent = message;
+        }
+      }
+      
+      function showEditFieldError(errorId, message) {
+        const errorElement = DOM.get(`#${errorId}`);
+        if (errorElement) {
+          errorElement.textContent = message;
+        }
+      }
+      
+      // 清除表单错误
+      function clearFormErrors() {
+        const errorElements = reservationModal.querySelectorAll('.error-message');
+        errorElements.forEach(element => {
+          element.textContent = '';
+        });
+      }
+      
+      function clearEditFormErrors() {
+        const errorElements = editReservationModal.querySelectorAll('.error-message');
+        errorElements.forEach(element => {
+          element.textContent = '';
+        });
+      }
+      
+      // 显示加载状态
+      function showLoading() {
+        loadingContainer.style.display = 'flex';
+        reservationsTable.style.display = 'none';
+        emptyState.style.display = 'none';
+        pagination.style.display = 'none';
+      }
+      
+      // 隐藏加载状态
+      function hideLoading() {
+        loadingContainer.style.display = 'none';
+      }
+      
+      // 显示表格
+      function showTable() {
+        reservationsTable.style.display = 'table';
+        emptyState.style.display = 'none';
+      }
+      
+      // 显示空状态
+      function showEmptyState() {
+        reservationsTable.style.display = 'none';
+        emptyState.style.display = 'block';
+        pagination.style.display = 'none';
+      }
+      
+      // 全局函数：查看预约详情
+      window.viewReservationDetail = async function(reservationId) {
+        try {
+          const response = await API.get(`/reservations/${reservationId}`);
+          
+          if (response.code === 200) {
+            const reservation = response.data;
+            alert(`预约详情：\n\n预约ID：${reservation.reservation_id}\n用户ID：${reservation.user_id}\n设施ID：${reservation.facility_id}\n开始时间：${Utils.formatDate(reservation.start_time, 'YYYY-MM-DD HH:mm')}\n结束时间：${Utils.formatDate(reservation.end_time, 'YYYY-MM-DD HH:mm')}\n状态：${getStatusText(reservation.status)}\n创建时间：${Utils.formatDate(reservation.created_at, 'YYYY-MM-DD HH:mm')}`);
+          } else {
+            Toast.error(response.msg || '获取预约详情失败');
+          }
+        } catch (error) {
+          console.error('View reservation detail error:', error);
+          Toast.error('获取预约详情失败，请稍后重试');
+        }
+      };
+      
+      // 全局函数：编辑预约
+      window.editReservation = function(reservationId) {
+        openEditReservationModal(reservationId);
+      };
+      
+      // 全局函数：取消预约
+      window.cancelReservation = function(reservationId) {
+        if (confirm('确定要取消这个预约吗？此操作不可恢复。')) {
+          handleCancelReservation(reservationId);
+        }
+      };
+      
+      // 处理取消预约
+      async function handleCancelReservation(reservationId) {
+        try {
+          const response = await API.post(`/reservations/${reservationId}/cancel`);
+          
+          if (response.code === 200) {
+            Toast.success(response.msg || '预约取消成功');
+            await loadReservationsData();
+          } else {
+            Toast.error(response.msg || '预约取消失败');
+          }
+        } catch (error) {
+          console.error('Cancel reservation error:', error);
+          Toast.error('预约取消失败，请稍后重试');
+        }
+      }
+    });
+  </script>
+</body>
+</html>

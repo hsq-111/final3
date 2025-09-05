@@ -1,0 +1,1187 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>数据报表 - 健身管理系统</title>
+  <link rel="stylesheet" href="css/style.css">
+  <!-- 引入Font Awesome图标库 -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    /* 继承仪表盘布局样式 */
+    .dashboard-container {
+      display: flex;
+      min-height: 100vh;
+    }
+    
+    /* 侧边栏导航 */
+    .sidebar {
+      width: 240px;
+      background-color: #1e293b;
+      color: white;
+      position: fixed;
+      height: 100vh;
+      overflow-y: auto;
+      transition: width 0.3s ease;
+      z-index: 100;
+    }
+    
+    .sidebar-header {
+      padding: 20px;
+      border-bottom: 1px solid #334155;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    
+    .sidebar-header i {
+      font-size: 1.5rem;
+      color: #3b82f6;
+    }
+    
+    .sidebar-header h2 {
+      margin: 0;
+      font-size: 1.25rem;
+      font-weight: 600;
+    }
+    
+    .nav-menu {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    
+    .nav-item {
+      position: relative;
+    }
+    
+    .nav-link {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 16px 20px;
+      color: #cbd5e1;
+      text-decoration: none;
+      transition: all 0.2s ease;
+    }
+    
+    .nav-link:hover {
+      background-color: #334155;
+      color: white;
+    }
+    
+    .nav-link.active {
+      background-color: #3b82f6;
+      color: white;
+    }
+    
+    .nav-link i {
+      font-size: 1.125rem;
+      width: 24px;
+      text-align: center;
+    }
+    
+    /* 主内容区域 */
+    .main-content {
+      flex: 1;
+      margin-left: 240px;
+      transition: margin-left 0.3s ease;
+    }
+    
+    /* 顶部导航 */
+    .top-nav {
+      background-color: white;
+      padding: 16px 24px;
+      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+    
+    .top-nav-left {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    
+    .toggle-sidebar {
+      font-size: 1.25rem;
+      cursor: pointer;
+      color: #334155;
+    }
+    
+    .top-nav-right {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    
+    .user-profile {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+    }
+    
+    .user-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background-color: #3b82f6;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: 600;
+    }
+    
+    .user-info {
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .user-name {
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: #1e293b;
+    }
+    
+    .user-role {
+      font-size: 0.75rem;
+      color: #64748b;
+    }
+    
+    /* 内容包装器 */
+    .content-wrapper {
+      padding: 24px;
+    }
+    
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 24px;
+    }
+    
+    .page-header h1 {
+      margin: 0;
+      font-size: 1.875rem;
+      color: #1e293b;
+    }
+    
+    .page-header p {
+      color: #64748b;
+      margin-top: 4px;
+    }
+    
+    /* 工具栏 */
+    .toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      gap: 16px;
+    }
+    
+    .date-filters {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+    
+    .filter-select {
+      padding: 10px 16px;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      font-size: 0.875rem;
+      background-color: white;
+    }
+    
+    .export-actions {
+      display: flex;
+      gap: 12px;
+    }
+    
+    /* 概览统计卡片 */
+    .overview-stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 24px;
+      margin-bottom: 32px;
+    }
+    
+    .stat-card {
+      background-color: white;
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    
+    .stat-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    }
+    
+    .stat-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 16px;
+    }
+    
+    .stat-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      color: white;
+    }
+    
+    .stat-icon.users {
+      background-color: #3b82f6;
+    }
+    
+    .stat-icon.active-users {
+      background-color: #10b981;
+    }
+    
+    .stat-icon.facilities {
+      background-color: #f59e0b;
+    }
+    
+    .stat-icon.available-facilities {
+      background-color: #22c55e;
+    }
+    
+    .stat-icon.classes {
+      background-color: #8b5cf6;
+    }
+    
+    .stat-icon.upcoming-classes {
+      background-color: #6366f1;
+    }
+    
+    .stat-icon.reservations {
+      background-color: #ec4899;
+    }
+    
+    .stat-icon.confirmed-reservations {
+      background-color: #06b6d4;
+    }
+    
+    .stat-card-content h3 {
+      margin: 0;
+      font-size: 2rem;
+      font-weight: 700;
+      color: #1e293b;
+    }
+    
+    .stat-card-content p {
+      margin: 0;
+      color: #64748b;
+      font-size: 0.875rem;
+    }
+    
+    /* 图表区域 */
+    .charts-section {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 24px;
+      margin-bottom: 32px;
+    }
+    
+    .chart-card {
+      background-color: white;
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+    }
+    
+    .chart-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+    }
+    
+    .chart-title {
+      font-size: 1.125rem;
+      font-weight: 600;
+      color: #1e293b;
+      margin: 0;
+    }
+    
+    .chart-container {
+      width: 100%;
+      height: 300px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #94a3b8;
+      border: 2px dashed #e2e8f0;
+      border-radius: 8px;
+      background-color: #f8fafc;
+    }
+    
+    .chart-placeholder {
+      text-align: center;
+    }
+    
+    .chart-placeholder i {
+      font-size: 3rem;
+      margin-bottom: 12px;
+      display: block;
+    }
+    
+    /* 表格区域 */
+    .tables-section {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      margin-bottom: 32px;
+    }
+    
+    .table-card {
+      background-color: white;
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+    }
+    
+    .table-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    
+    .table-title {
+      font-size: 1.125rem;
+      font-weight: 600;
+      color: #1e293b;
+      margin: 0;
+    }
+    
+    .view-all-link {
+      color: #3b82f6;
+      text-decoration: none;
+      font-size: 0.875rem;
+    }
+    
+    .view-all-link:hover {
+      text-decoration: underline;
+    }
+    
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    
+    .data-table th,
+    .data-table td {
+      padding: 12px;
+      text-align: left;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    
+    .data-table th {
+      background-color: #f8fafc;
+      font-weight: 600;
+      color: #374151;
+      font-size: 0.875rem;
+    }
+    
+    .data-table td {
+      font-size: 0.875rem;
+      color: #4b5563;
+    }
+    
+    .data-table tbody tr:hover {
+      background-color: #f9fafb;
+    }
+    
+    .progress-bar {
+      width: 100%;
+      height: 8px;
+      background-color: #e2e8f0;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    
+    .progress-fill {
+      height: 100%;
+      background-color: #3b82f6;
+      transition: width 0.3s ease;
+    }
+    
+    /* 加载状态 */
+    .loading-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 40px;
+    }
+    
+    .loading-spinner {
+      border: 3px solid #f3f4f6;
+      border-top: 3px solid #3b82f6;
+      border-radius: 50%;
+      width: 24px;
+      height: 24px;
+      animation: spin 1s linear infinite;
+    }
+    
+    /* 用户活跃度时段分布 */
+    .activity-hours {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 4px;
+      margin-top: 16px;
+    }
+    
+    .hour-block {
+      aspect-ratio: 1;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      font-weight: 500;
+      color: white;
+      position: relative;
+    }
+    
+    .hour-block.low {
+      background-color: #cbd5e1;
+    }
+    
+    .hour-block.medium {
+      background-color: #94a3b8;
+    }
+    
+    .hour-block.high {
+      background-color: #64748b;
+    }
+    
+    .hour-block.peak {
+      background-color: #475569;
+    }
+    
+    /* 响应式设计 */
+    @media (max-width: 1024px) {
+      .charts-section,
+      .tables-section {
+        grid-template-columns: 1fr;
+      }
+      
+      .overview-stats {
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      }
+    }
+    
+    @media (max-width: 768px) {
+      .sidebar {
+        transform: translateX(-100%);
+      }
+      
+      .sidebar.open {
+        transform: translateX(0);
+      }
+      
+      .main-content {
+        margin-left: 0;
+      }
+      
+      .toolbar {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      
+      .date-filters {
+        justify-content: space-between;
+      }
+      
+      .overview-stats {
+        grid-template-columns: 1fr;
+      }
+      
+      .activity-hours {
+        grid-template-columns: repeat(6, 1fr);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="dashboard-container">
+    <!-- 侧边栏导航 -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <i class="fas fa-dumbbell"></i>
+        <h2>健身管理系统</h2>
+      </div>
+      
+      <ul class="nav-menu">
+        <li class="nav-item">
+          <a href="dashboard.html" class="nav-link">
+            <i class="fas fa-home"></i>
+            <span>首页</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="members.html" class="nav-link">
+            <i class="fas fa-users"></i>
+            <span>会员管理</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="equipment.html" class="nav-link">
+            <i class="fas fa-tools"></i>
+            <span>器材管理</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="trainers.html" class="nav-link">
+            <i class="fas fa-user-tie"></i>
+            <span>教练管理</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="classes.html" class="nav-link">
+            <i class="fas fa-calendar-alt"></i>
+            <span>课程管理</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="appointments.html" class="nav-link">
+            <i class="fas fa-clipboard-list"></i>
+            <span>预约管理</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="reports.html" class="nav-link active">
+            <i class="fas fa-chart-bar"></i>
+            <span>数据报表</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="settings.html" class="nav-link">
+            <i class="fas fa-cog"></i>
+            <span>系统设置</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="javascript:void(0)" id="logout-button" class="nav-link">
+            <i class="fas fa-sign-out-alt"></i>
+            <span>退出登录</span>
+          </a>
+        </li>
+      </ul>
+    </aside>
+    
+    <!-- 主内容区域 -->
+    <main class="main-content">
+      <!-- 顶部导航 -->
+      <nav class="top-nav">
+        <div class="top-nav-left">
+          <i class="fas fa-bars toggle-sidebar" id="toggle-sidebar"></i>
+        </div>
+        <div class="top-nav-right">
+          <div class="user-profile">
+            <div class="user-avatar" id="user-avatar">AD</div>
+            <div class="user-info">
+              <span class="user-name" id="user-name">管理员</span>
+              <span class="user-role">超级管理员</span>
+            </div>
+          </div>
+        </div>
+      </nav>
+      
+      <!-- 内容包装器 -->
+      <div class="content-wrapper">
+        <!-- 页面标题 -->
+        <div class="page-header">
+          <div>
+            <h1>数据报表</h1>
+            <p>分析健身房运营数据和用户活跃度</p>
+          </div>
+        </div>
+        
+        <!-- 工具栏 -->
+        <div class="toolbar">
+          <div class="date-filters">
+            <label>统计周期：</label>
+            <select class="filter-select" id="period-filter">
+              <option value="7">最近7天</option>
+              <option value="30" selected>最近30天</option>
+              <option value="90">最近90天</option>
+              <option value="365">最近1年</option>
+            </select>
+            <button class="btn btn-outline" id="refresh-btn">
+              <i class="fas fa-sync-alt mr-2"></i>刷新数据
+            </button>
+          </div>
+          <div class="export-actions">
+            <button class="btn btn-outline" id="export-pdf-btn">
+              <i class="fas fa-file-pdf mr-2"></i>导出PDF
+            </button>
+            <button class="btn btn-outline" id="export-excel-btn">
+              <i class="fas fa-file-excel mr-2"></i>导出Excel
+            </button>
+          </div>
+        </div>
+        
+        <!-- 系统概览统计 -->
+        <div class="overview-stats" id="overview-stats">
+          <div id="overview-loading" class="loading-container">
+            <div class="loading-spinner"></div>
+            <span style="margin-left: 12px;">加载概览数据...</span>
+          </div>
+        </div>
+        
+        <!-- 图表区域 -->
+        <div class="charts-section">
+          <div class="chart-card">
+            <div class="chart-header">
+              <h3 class="chart-title">用户活跃度趋势</h3>
+              <select class="filter-select" id="activity-chart-filter">
+                <option value="daily">按天</option>
+                <option value="weekly">按周</option>
+                <option value="monthly">按月</option>
+              </select>
+            </div>
+            <div class="chart-container" id="activity-chart">
+              <div class="chart-placeholder">
+                <i class="fas fa-chart-line"></i>
+                <p>用户活跃度数据图表</p>
+              </div>
+            </div>
+          </div>
+          
+          <div class="chart-card">
+            <div class="chart-header">
+              <h3 class="chart-title">高峰时段分布</h3>
+            </div>
+            <div class="chart-container" id="peak-hours-chart">
+              <div class="chart-placeholder">
+                <i class="fas fa-clock"></i>
+                <p>高峰时段热力图</p>
+              </div>
+            </div>
+            <div class="activity-hours" id="activity-hours">
+              <!-- 时段活跃度热力图将在这里渲染 -->
+            </div>
+          </div>
+        </div>
+        
+        <!-- 表格数据区域 -->
+        <div class="tables-section">
+          <div class="table-card">
+            <div class="table-header">
+              <h3 class="table-title">热门课程排行</h3>
+              <a href="classes.html" class="view-all-link">查看全部</a>
+            </div>
+            <div id="popular-classes-loading" class="loading-container" style="display: none;">
+              <div class="loading-spinner"></div>
+              <span style="margin-left: 12px;">加载中...</span>
+            </div>
+            <table class="data-table" id="popular-classes-table">
+              <thead>
+                <tr>
+                  <th>课程名称</th>
+                  <th>类型</th>
+                  <th>参与人数</th>
+                  <th>预约率</th>
+                </tr>
+              </thead>
+              <tbody id="popular-classes-tbody">
+                <!-- 热门课程数据将在这里渲染 -->
+              </tbody>
+            </table>
+          </div>
+          
+          <div class="table-card">
+            <div class="table-header">
+              <h3 class="table-title">器材使用率</h3>
+              <a href="equipment.html" class="view-all-link">查看全部</a>
+            </div>
+            <div id="equipment-usage-loading" class="loading-container" style="display: none;">
+              <div class="loading-spinner"></div>
+              <span style="margin-left: 12px;">加载中...</span>
+            </div>
+            <table class="data-table" id="equipment-usage-table">
+              <thead>
+                <tr>
+                  <th>器材名称</th>
+                  <th>类型</th>
+                  <th>使用率</th>
+                  <th>状态</th>
+                </tr>
+              </thead>
+              <tbody id="equipment-usage-tbody">
+                <!-- 器材使用率数据将在这里渲染 -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="js/app.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // 检查登录状态
+      if (!Auth.isLoggedIn()) {
+        window.location.href = 'login.html';
+        return;
+      }
+      
+      // 页面元素
+      const periodFilter = DOM.get('#period-filter');
+      const refreshBtn = DOM.get('#refresh-btn');
+      const exportPdfBtn = DOM.get('#export-pdf-btn');
+      const exportExcelBtn = DOM.get('#export-excel-btn');
+      const activityChartFilter = DOM.get('#activity-chart-filter');
+      
+      const overviewStats = DOM.get('#overview-stats');
+      const overviewLoading = DOM.get('#overview-loading');
+      const popularClassesLoading = DOM.get('#popular-classes-loading');
+      const popularClassesTbody = DOM.get('#popular-classes-tbody');
+      const equipmentUsageLoading = DOM.get('#equipment-usage-loading');
+      const equipmentUsageTbody = DOM.get('#equipment-usage-tbody');
+      const activityHours = DOM.get('#activity-hours');
+      
+      // 用户信息
+      const userInfo = Auth.getUserInfo();
+      if (userInfo && userInfo.username) {
+        DOM.text(DOM.get('#user-name'), userInfo.username);
+        const initial = userInfo.username.charAt(0).toUpperCase();
+        DOM.text(DOM.get('#user-avatar'), initial);
+      }
+      
+      // 数据状态
+      let currentPeriod = 30;
+      
+      // 初始化页面
+      init();
+      
+      async function init() {
+        await loadAllData();
+        bindEvents();
+      }
+      
+      function bindEvents() {
+        // 侧边栏切换
+        DOM.on(DOM.get('#toggle-sidebar'), 'click', function() {
+          DOM.toggleClass(DOM.get('#sidebar'), 'open');
+        });
+        
+        // 退出登录
+        DOM.on(DOM.get('#logout-button'), 'click', function() {
+          if (confirm('确定要退出登录吗？')) {
+            Auth.logout();
+          }
+        });
+        
+        // 周期筛选
+        DOM.on(periodFilter, 'change', function() {
+          currentPeriod = parseInt(this.value);
+          loadAllData();
+        });
+        
+        // 刷新数据
+        DOM.on(refreshBtn, 'click', function() {
+          loadAllData();
+        });
+        
+        // 导出功能
+        DOM.on(exportPdfBtn, 'click', function() {
+          exportToPDF();
+        });
+        
+        DOM.on(exportExcelBtn, 'click', function() {
+          exportToExcel();
+        });
+        
+        // 图表筛选
+        DOM.on(activityChartFilter, 'change', function() {
+          // 这里可以实现图表数据的重新加载
+          console.log('Activity chart filter changed:', this.value);
+        });
+      }
+      
+      // 加载所有数据
+      async function loadAllData() {
+        await Promise.all([
+          loadOverviewData(),
+          loadPopularClasses(),
+          loadEquipmentUsage(),
+          loadUserActivity()
+        ]);
+      }
+      
+      // 加载概览数据
+      async function loadOverviewData() {
+        try {
+          overviewLoading.style.display = 'flex';
+          
+          const response = await API.get('/data/overview');
+          
+          if (response.code === 200) {
+            const data = response.data;
+            renderOverviewStats(data);
+          } else {
+            Toast.error(response.msg || '获取概览数据失败');
+            renderOverviewStats({});
+          }
+        } catch (error) {
+          console.error('Load overview data error:', error);
+          Toast.error('获取概览数据失败，请稍后重试');
+          renderOverviewStats({});
+        } finally {
+          overviewLoading.style.display = 'none';
+        }
+      }
+      
+      // 渲染概览统计
+      function renderOverviewStats(data) {
+        const defaultData = {
+          total_users: 0,
+          active_users_today: 0,
+          total_facilities: 0,
+          available_facilities: 0,
+          total_classes: 0,
+          upcoming_classes: 0,
+          total_reservations: 0,
+          confirmed_reservations: 0
+        };
+        
+        const stats = { ...defaultData, ...data };
+        
+        overviewStats.innerHTML = `
+          <div class="stat-card">
+            <div class="stat-card-header">
+              <div class="stat-icon users">
+                <i class="fas fa-users"></i>
+              </div>
+            </div>
+            <div class="stat-card-content">
+              <h3>${stats.total_users}</h3>
+              <p>总用户数</p>
+            </div>
+          </div>
+          
+          <div class="stat-card">
+            <div class="stat-card-header">
+              <div class="stat-icon active-users">
+                <i class="fas fa-user-check"></i>
+              </div>
+            </div>
+            <div class="stat-card-content">
+              <h3>${stats.active_users_today}</h3>
+              <p>今日活跃用户</p>
+            </div>
+          </div>
+          
+          <div class="stat-card">
+            <div class="stat-card-header">
+              <div class="stat-icon facilities">
+                <i class="fas fa-tools"></i>
+              </div>
+            </div>
+            <div class="stat-card-content">
+              <h3>${stats.total_facilities}</h3>
+              <p>设施总数</p>
+            </div>
+          </div>
+          
+          <div class="stat-card">
+            <div class="stat-card-header">
+              <div class="stat-icon available-facilities">
+                <i class="fas fa-check-circle"></i>
+              </div>
+            </div>
+            <div class="stat-card-content">
+              <h3>${stats.available_facilities}</h3>
+              <p>可用设施</p>
+            </div>
+          </div>
+          
+          <div class="stat-card">
+            <div class="stat-card-header">
+              <div class="stat-icon classes">
+                <i class="fas fa-calendar-alt"></i>
+              </div>
+            </div>
+            <div class="stat-card-content">
+              <h3>${stats.total_classes}</h3>
+              <p>课程总数</p>
+            </div>
+          </div>
+          
+          <div class="stat-card">
+            <div class="stat-card-header">
+              <div class="stat-icon upcoming-classes">
+                <i class="fas fa-clock"></i>
+              </div>
+            </div>
+            <div class="stat-card-content">
+              <h3>${stats.upcoming_classes}</h3>
+              <p>即将开始</p>
+            </div>
+          </div>
+          
+          <div class="stat-card">
+            <div class="stat-card-header">
+              <div class="stat-icon reservations">
+                <i class="fas fa-clipboard-list"></i>
+              </div>
+            </div>
+            <div class="stat-card-content">
+              <h3>${stats.total_reservations}</h3>
+              <p>预约总数</p>
+            </div>
+          </div>
+          
+          <div class="stat-card">
+            <div class="stat-card-header">
+              <div class="stat-icon confirmed-reservations">
+                <i class="fas fa-check-double"></i>
+              </div>
+            </div>
+            <div class="stat-card-content">
+              <h3>${stats.confirmed_reservations}</h3>
+              <p>已确认预约</p>
+            </div>
+          </div>
+        `;
+      }
+      
+      // 加载热门课程
+      async function loadPopularClasses() {
+        try {
+          popularClassesLoading.style.display = 'flex';
+          
+          const response = await API.get(`/data/popular-classes?days=${currentPeriod}&limit=5`);
+          
+          if (response.code === 200) {
+            const data = response.data || [];
+            renderPopularClasses(data);
+          } else {
+            Toast.error(response.msg || '获取热门课程数据失败');
+            renderPopularClasses([]);
+          }
+        } catch (error) {
+          console.error('Load popular classes error:', error);
+          // 使用模拟数据
+          renderPopularClasses([
+            { class_name: '瑜伽入门', type: '瑜伽', total_participants: 150, booking_rate: 0.95 },
+            { class_name: 'HIIT训练', type: '高强度', total_participants: 120, booking_rate: 0.9 },
+            { class_name: '力量训练', type: '力量', total_participants: 100, booking_rate: 0.85 },
+            { class_name: '有氧操', type: '有氧', total_participants: 80, booking_rate: 0.8 },
+            { class_name: '游泳课', type: '游泳', total_participants: 60, booking_rate: 0.75 }
+          ]);
+        } finally {
+          popularClassesLoading.style.display = 'none';
+        }
+      }
+      
+      // 渲染热门课程
+      function renderPopularClasses(data) {
+        DOM.empty(popularClassesTbody);
+        
+        if (data.length === 0) {
+          const row = DOM.create('tr');
+          row.innerHTML = '<td colspan="4" style="text-align: center; color: #9ca3af;">暂无数据</td>';
+          popularClassesTbody.appendChild(row);
+          return;
+        }
+        
+        data.forEach(item => {
+          const row = DOM.create('tr');
+          const bookingRate = (item.booking_rate * 100).toFixed(1);
+          
+          row.innerHTML = `
+            <td>${item.class_name}</td>
+            <td>${item.type}</td>
+            <td>${item.total_participants}</td>
+            <td>
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <div class="progress-bar" style="flex: 1;">
+                  <div class="progress-fill" style="width: ${bookingRate}%"></div>
+                </div>
+                <span>${bookingRate}%</span>
+              </div>
+            </td>
+          `;
+          popularClassesTbody.appendChild(row);
+        });
+      }
+      
+      // 加载器材使用率
+      async function loadEquipmentUsage() {
+        try {
+          equipmentUsageLoading.style.display = 'flex';
+          
+          // 使用设施数据模拟使用率
+          const response = await API.get('/admin/facilities');
+          
+          if (response.code === 200) {
+            const facilities = response.data || [];
+            // 为每个设施添加模拟使用率
+            const usageData = facilities.slice(0, 5).map(facility => ({
+              name: facility.name,
+              type: facility.type,
+              usage_rate: Math.random() * 0.8 + 0.2, // 20%-100%的使用率
+              status: facility.status
+            }));
+            renderEquipmentUsage(usageData);
+          } else {
+            renderEquipmentUsage([]);
+          }
+        } catch (error) {
+          console.error('Load equipment usage error:', error);
+          // 使用模拟数据
+          renderEquipmentUsage([
+            { name: '跑步机A1', type: '有氧器材', usage_rate: 0.95, status: 'AVAILABLE' },
+            { name: '哑铃套装', type: '力量器材', usage_rate: 0.88, status: 'AVAILABLE' },
+            { name: '动感单车', type: '有氧器材', usage_rate: 0.82, status: 'AVAILABLE' },
+            { name: '杠铃架', type: '力量器材', usage_rate: 0.76, status: 'AVAILABLE' },
+            { name: '瑜伽垫', type: '功能性器材', usage_rate: 0.65, status: 'AVAILABLE' }
+          ]);
+        } finally {
+          equipmentUsageLoading.style.display = 'none';
+        }
+      }
+      
+      // 渲染器材使用率
+      function renderEquipmentUsage(data) {
+        DOM.empty(equipmentUsageTbody);
+        
+        if (data.length === 0) {
+          const row = DOM.create('tr');
+          row.innerHTML = '<td colspan="4" style="text-align: center; color: #9ca3af;">暂无数据</td>';
+          equipmentUsageTbody.appendChild(row);
+          return;
+        }
+        
+        data.forEach(item => {
+          const row = DOM.create('tr');
+          const usageRate = (item.usage_rate * 100).toFixed(1);
+          const statusText = getStatusText(item.status);
+          const statusClass = `status-${item.status.toLowerCase()}`;
+          
+          row.innerHTML = `
+            <td>${item.name}</td>
+            <td>${item.type}</td>
+            <td>
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <div class="progress-bar" style="flex: 1;">
+                  <div class="progress-fill" style="width: ${usageRate}%"></div>
+                </div>
+                <span>${usageRate}%</span>
+              </div>
+            </td>
+            <td>
+              <span class="status-badge ${statusClass}">
+                ${statusText}
+              </span>
+            </td>
+          `;
+          equipmentUsageTbody.appendChild(row);
+        });
+      }
+      
+      // 加载用户活跃度
+      async function loadUserActivity() {
+        try {
+          const response = await API.get(`/data/user-activity?days=${currentPeriod}`);
+          
+          if (response.code === 200) {
+            const data = response.data;
+            renderActivityHours(data.peak_hours || []);
+          } else {
+            renderActivityHours(['18:00-19:00', '19:00-20:00']);
+          }
+        } catch (error) {
+          console.error('Load user activity error:', error);
+          // 使用模拟数据
+          renderActivityHours(['18:00-19:00', '19:00-20:00', '20:00-21:00']);
+        }
+      }
+      
+      // 渲染活跃时段热力图
+      function renderActivityHours(peakHours) {
+        DOM.empty(activityHours);
+        
+        // 生成24小时的活跃度数据
+        const hoursData = [];
+        for (let i = 0; i < 24; i++) {
+          const hour = i.toString().padStart(2, '0');
+          const timeRange = `${hour}:00-${(i + 1).toString().padStart(2, '0')}:00`;
+          
+          // 模拟活跃度级别
+          let level = 'low';
+          if (i >= 6 && i <= 22) {
+            // 白天时段
+            if (i >= 9 && i <= 11) level = 'medium'; // 上午
+            else if (i >= 14 && i <= 16) level = 'medium'; // 下午
+            else if (i >= 18 && i <= 21) level = peakHours.some(p => p.includes(hour)) ? 'peak' : 'high'; // 晚上
+            else level = 'medium';
+          }
+          
+          hoursData.push({ hour: i, level, timeRange });
+        }
+        
+        // 渲染为12x2的网格
+        hoursData.forEach((data, index) => {
+          const block = DOM.create('div', `hour-block ${data.level}`);
+          block.textContent = data.hour;
+          block.title = `${data.timeRange} - ${getLevelText(data.level)}`;
+          activityHours.appendChild(block);
+        });
+      }
+      
+      // 获取活跃度级别文本
+      function getLevelText(level) {
+        const levelMap = {
+          low: '低活跃',
+          medium: '中等活跃',
+          high: '高活跃',
+          peak: '高峰时段'
+        };
+        return levelMap[level] || level;
+      }
+      
+      // 获取状态文本
+      function getStatusText(status) {
+        const statusMap = {
+          'AVAILABLE': '可用',
+          'BUSY': '使用中',
+          'MAINTENANCE': '维护中'
+        };
+        return statusMap[status] || status;
+      }
+      
+      // 导出PDF
+      function exportToPDF() {
+        Toast.info('PDF导出功能开发中...');
+        // 这里可以集成PDF导出库，如jsPDF
+      }
+      
+      // 导出Excel
+      function exportToExcel() {
+        Toast.info('Excel导出功能开发中...');
+        // 这里可以集成Excel导出库，如SheetJS
+      }
+    });
+  </script>
+</body>
+</html>
